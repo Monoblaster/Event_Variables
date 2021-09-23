@@ -11,23 +11,23 @@ function doVCEVarFunction(%function, %oldValue, %newValue){
 	if(%function == 0)
 		return getSubStr(%newValue,0,32768); //we do nothing as it's done already + substring to prevent overflows
 	if(%function == 1)
-		return %oldvalue + getField(%newvalue, 0);
+		return %oldvalue + %newValue;
 	if(%function == 2)
-		return %oldvalue - getField(%newvalue, 0);
+		return %oldvalue - %newValue;
 	if(%function == 3)
-		return %oldvalue * getField(%newvalue, 0);
+		return %oldvalue * %newValue;
 	if(%function == 4)
-		return %oldvalue / getField(%newvalue, 0);
+		return %oldvalue / %newValue;
 	if(%function == 16)
-		return %oldvalue % getField(%newvalue, 0);
+		return %oldvalue % %newValue;
 	if(%function == 7)
-		return mPow(%oldValue, getField(%newvalue, 0));
+		return mPow(%oldValue, %newValue);
 	if(%function == 8)
-		return mPow(%oldValue, 1 / getField(%newvalue, 0));
+		return mPow(%oldValue, 1 / %newValue);
 	if(%function == 9)
-		return mPercent(%oldvalue, getField(%newvalue, 0));
+		return mPercent(%oldvalue, %newValue);
 	if(%function == 10)
-		return getRandom(%oldValue, getField(%newvalue, 0));
+		return getRandom(%oldValue, %newValue);
 	if(%function == 17)
 		return mAbs(%oldValue);
 	if(%function == 5)
@@ -35,7 +35,7 @@ function doVCEVarFunction(%function, %oldValue, %newValue){
 	if(%function == 6)
 		return mCeil(%oldValue);
 	if(%function == 18)
-		return mClamp(%oldValue, getField(%newValue, 0), getField(%newValue, 1));
+		return mClamp(%oldValue, (getField(%newvalue, 0) + 0), (getField(%newvalue, 1) + 0));
 	if(%function == 19)
 		return mSin(%oldValue);
 	if(%function == 20)
@@ -51,79 +51,79 @@ function doVCEVarFunction(%function, %oldValue, %newValue){
 	if(%function == 15)
 		return strLen(%oldValue);
 	if(%function == 25)
-		return strPos(%oldValue, getField(%newValue, 0), getField(%newValue, 1));
+		return strPos(%oldValue, getField(%newvalue, 0), (getField(%newvalue, 1) + 0));
 	if(%function == 12)
 		return strLwr(%oldValue);
 	if(%function == 13)
 		return strUpr(%oldValue);
 	if(%function == 14) 
-		return strChr(%oldValue, getField(%newValue, 0));
+		return strChr(%oldValue, (getField(%newvalue, 0) + 0));
 	if(%function == 26)
-		return strReplace(%oldValue, getField(%newValue, 0), getField(%newValue, 1));
+		return strReplace(%oldValue, getField(%newvalue, 0), (getField(%newvalue, 1) + 0));
 	if(%function == 27)
 		return trim(%oldValue);
 	if(%function == 28)
-		return getSubStr(%oldValue, getField(%newValue, 0), getField(%newValue, 1));
+		return getSubStr(%oldValue, (getField(%newvalue, 0) + 0), (getField(%newvalue, 1) + 0));
 	if(%function == 11)
-		return getWord(%oldValue, getField(%newValue, 0));
+		return getWord(%oldValue, (getField(%newvalue, 0) + 0));
 	if(%function == 29)
 		return getWordCount(%oldValue);
 	if(%function == 30)
-		return getWords(%oldValue, getField(%newValue, 0), getField(%newValue, 1));
+		return getWords(%oldValue, (getField(%newvalue, 0) + 0), (getField(%newvalue, 1) + 0));
 	if(%function == 31)
-		return removeWord(%oldValue, getField(%newValue, 0));
+		return removeWord(%oldValue, (getField(%newvalue, 0) + 0));
 	if(%function == 32)
-		return removeWords(%oldValue,getField(%newValue, 0),getField(%newValue, 0));
+		return removeWords(%oldValue,(getField(%newvalue, 0) + 0),(getField(%newvalue, 1) + 0));
 	if(%function == 33)
-		return setWord(%oldValue, getField(%newValue, 0), getField(%newValue, 1));
+		return setWord(%oldValue, (getField(%newvalue, 0) + 0), (getField(%newvalue, 1) + 0));
 	if(%function == 34)
-		return vectorDist(%oldValue, getField(%newValue, 0));
+		return vectorDist(%oldValue, %newValue);
 	if(%function == 35)
-		return vectorAdd(%oldValue, getField(%newValue, 0));
+		return vectorAdd(%oldValue, %newValue);
 	if(%function == 36)
-		return vectorSub(%oldValue, getField(%newValue, 0));
+		return vectorSub(%oldValue, %newValue);
 	if(%function == 37)
-		return vectorScale(%oldValue, getField(%newValue, 0));
+		return vectorScale(%oldValue, %newValue);
 	if(%function == 38)
 		return vectorLen(%oldValue);
 	if(%function == 39)
 		return vectorNormalize(%oldValue);
 	if(%function == 40)
-		return vectorDot(%oldValue, getField(%newValue, 0));
+		return vectorDot(%oldValue, %newValue);
 	if(%function == 41)
-		return vectorCross(%oldValue, getField(%newValue, 0));
+		return vectorCross(%oldValue, %newValue);
 	if(%function == 42)
-		return getBoxCenter(%oldValue);
+		return getBoxCenter(%oldValue SPC %newValue);
 	if(%function == 43)
-		return %oldValue && getField(%newValue, 0);
+		return %oldValue && %newValue;
 	if(%function == 44)
-		return %oldValue || getField(%newValue, 0);
+		return %oldValue || %newValue;
 	if(%function == 45)
-		return %oldValue & getField(%newValue, 0);
+		return %oldValue & %newValue;
 	if(%function == 46)
-		return %oldValue | getField(%newValue, 0);
+		return %oldValue | %newValue;
 	if(%function == 47)
-		return %oldValue >> getField(%newValue, 0);
+		return %oldValue >> %newValue;
 	if(%function == 48)
-		return %oldValue << getField(%newValue, 0);
+		return %oldValue << %newValue;
 	if(%function == 49)
-		return %oldValue ^ getField(%newValue, 0);
+		return %oldValue ^ %newValue;
 	if(%function == 50)
 		return ~%oldValue;
 	if(%function == 51)
 		return !%oldValue;
 	if(%function == 52)
-		return %oldValue $= getField(%newValue, 0);
+		return %oldValue $= %newValue;
 	if(%function == 53)
-		return %oldValue !$= getField(%newValue, 0);
+		return %oldValue !$= %newValue;
 	if(%function == 54)
-		return %oldValue > getField(%newValue, 0);
+		return %oldValue > %newValue;
 	if(%function == 55)
-		return %oldValue < getField(%newValue, 0);
+		return %oldValue < %newValue;
 	if(%function == 56)
-		return %oldValue >= getField(%newValue, 0);
+		return %oldValue >= %newValue;
 	if(%function == 57)
-		return %oldValue <= getField(%newValue, 0);
+		return %oldValue <= %newValue;
 	if(%function == 58)
 		return strPos(%oldValue,getField(%newValue, 0)) > -1;
 }
@@ -403,7 +403,7 @@ function fxDTSBrick::VCE_ProcessVCERange(%obj, %start, %end, %inputEvent, %clien
 				continue;
 
 			// Call for event function
-			%event = %next.schedule(%eventDelay,"VCECallEvent",%eventOutput, %obj, %client,%client.player,%obj.vehicle,%obj.hbot,getMinigameFromObject(%obj), %obj.eventOutputAppendClient[%i],%type, %p1, %p2, %p3, %p4);
+			%event = %next.schedule(%eventDelay,"VCECallEvent",%eventOutput, %obj, %client,%client.player,%obj.vehicle,%obj.hbot,getMinigameFromObject(%obj), %obj.eventOutputAppendClient[%i],%i, %p1, %p2, %p3, %p4);
 			
 			// To be able to cancel an event
 			if (%delay > 0)

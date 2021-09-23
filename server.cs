@@ -4,10 +4,10 @@
 //Helpers: Clockturn, Truce, Boom, Lilboarder32, Chrono, and Monoblaster
 //------
 //Major: 7
-//Minor: 4
-//Patch: 3
-//Total: 7.43
-$VCE::Server::Version = "7.43";
+//Minor: 5
+//Patch: 0
+//Total: 7.50
+$VCE::Server::Version = "7.50";
 //---
 // Support
 //---
@@ -47,7 +47,7 @@ function VCE_initServer()
 	//list of operators
 	%functionParameter = "\tlist Set 0 Add 1 Subtract 2 Multiply 3 Divide 4 Modulos 16 Power 7 Radical 8 Percent 9 Random 10 Absolute 17 Floor 5 Ceil 6 Clamp 18 Sin 19 Cos 20 Tan 21 ASin 22 ACos 23 ATan 24 Length 15 StringPosition 25 Lowercase 12 Uppercase 13 Character 14 Replace 26 Trim 27 SubString 28 Words 11 CountWord 29 SubWord 30 RemoveWord 31 RemoveWords 32 SetWord 33 VectorDist 34 VectorAdd 35 VectorSub 36 VectorScale 37 VectorLen 38 VectorNormalize 39 VectorDot 40 VectorCross 41 VectorCenter 42 And 43 Or 44 BitwiseAnd 45 BitwiseOr 46 BitwiseShiftRight 47 BitwiseShiftLeft 48 BitwiseXOR 49 BitwiseComplement 50 BooleanInverse 51";
 	//Register all events and special vars
-	registerOutputEvent(fxDtsBrick,"VCE_modVariable","list Brick 0 Player 1 Client 2 Minigame 3 Vehicle 4 Bot 5 Local 6\tstring 180 100" @ %functionParameter @ "\tstring 180 255",1);
+	registerOutputEvent(fxDtsBrick,"VCE_modVariable","list Brick 0 Player 1 Client 2 Minigame 3 Vehicle 4 Bot 5 Local 6\tstring 180 100" @ %functionParameter @ "\tstring 180 1000",1);
 	registerOutputEvent(fxDtsBrick,"VCE_ifValue","string 100 100\tlist == 0 != 1 > 2 < 3 >= 4 <= 5 ~= 6\tstring 100 100\tstring 8 30",1);
 	registerOutputEvent(fxDtsBrick,"VCE_retroCheck","list ifPlayerName 0 ifPlayerID 1 ifAdmin 2 ifPlayerEnergy 3 ifPlayerDamage 4 ifPlayerScore 5 ifLastPlayerMsg 6 ifBrickName 7 ifRandomDice 8\tlist == 0 != 1 > 2 < 3 >= 4 <= 5 ~= 6\tstring 100 100\tstring 8 30",1);
 	registerOutputEvent(fxDtsBrick,"VCE_ifVariable","string 100 100\tlist == 0 != 1 > 2 < 3 >= 4 <= 5 ~= 6\tstring 100 100\tstring 8 30",1);

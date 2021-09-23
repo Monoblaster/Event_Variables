@@ -144,48 +144,153 @@ function VCE_getReplacerHeaderEnd(%string,%headerStart){
 		return %headerEnd;
 	return -1;
 }
+function fxDTSBrick::doVCEReferenceString(%brick,%string)
+{
+	%referenceCount = getFieldCount(%string);
+
+	for(%i = 0; %i < %referenceCount; %i++)
+	{
+		%reference = getField(%string, %i);
+		%data = %brick.getField(%reference);
+		//is this a function, literal, or none of the above?
+		if(strPos(%reference,"VCE_ReplacerFunction") == 0)
+		{
+			//is this a object function or a normal function?
+			%obj = getField(%data,0);
+			if(isObject(%obj))
+			{
+				//scirptobject classes aren't stored in classname
+				%className = %obj.getClassName();
+				if(%obj.getClassname() $= "ScriptObject")
+					%className = %obj.class;
+				//is the function real?
+				%function = getField(%data, 1);
+				if(isFunction(%className,%function))
+				{
+					//is there any references in the parameters?
+					%parameters = %brick.doVCEReferenceString(getFields(%data,2, getFieldCount(%data) - 1));
+					
+					//seperate paramters into a list
+					%c = 0;
+					while((%parameter[%c] = getField(%parameters, %c)) !$= ""){%c++;}
+
+					//call function and get return
+					%product = %obj.call(%function,%parameter0,%parameter1,%parameter2,%parameter3,%parameter4,%parameter5,%parameter6,%parameter7,%parameter8,%parameter9,%parameter10,%parameter11,%parameter12,%parameter13,%parameter14);
+				}
+
+			}
+			else
+			{
+				//is the function real?
+				%function = getField(%data, 0);
+				if(isFunction(%function))
+				{
+					//is there any references in the parameters?
+					%parameters = %brick.doVCEReferenceString(getFields(%data,1, getFieldCount(%data)));
+					//seperate paramters into a list
+					%c = 0;
+					while((%parameter[%c] = getField(%parameters, %c)) !$= ""){%c++;}
+
+					//call function and get return
+					%product = call(%function,%parameter0,%parameter1,%parameter2,%parameter3,%parameter4,%parameter5,%parameter6,%parameter7,%parameter8,%parameter9,%parameter10,%parameter11,%parameter12,%parameter13,%parameter14);
+				}
+
+			}
+			%string = setField(%string,%i,%product);
+		}
+		else if(strPos(%reference,"VCE_ReplacerLiteral") == 0)
+		{
+			//a reference to a literal string of some kind
+		    %string = setField(%string,%i,fxDTSBrick::doVCEReferenceString(%brick,%data));
+		}
+	}
+	return %string;
+}
 //DO NOT CALL THIS AS THIS IS DONE AUTOMATICALY NOW
 //recursive getting of all things within <> replaces part of string with result
-function fxDTSBrick::filterVCEString(%brick,%string,%client,%player,%vehicle,%bot,%minigame){
+function fxDTSBrick::filterVCEString(%brick,%string,%client,%player,%vehicle,%bot,%minigame)
+{
 	//looks for the first header
 	%headerStart = -1;
 	while((%headerStart = strPos(%string,"<",%headerStart + 1)) != -1 && (%headerEnd = VCE_getReplacerHeaderEnd(%string,%headerStart)) == -1){}
 	//there is no valid header
 	if(%headerStart == -1)
+	{
+		if(%string !$= "")
+		{
+			%brick.VCE_ReplacerLiteral[%brick.VCE_ReplacerLiteralCount++] = %string;
+			%string = "VCE_ReplacerLiteral" @ %brick.VCE_ReplacerLiteralCount;
+		}
 		return %string;
+	}
 	//find the end of the replacer
 	%replacerEnd = strPos(%string,">",%headerEnd + 1);
 	%checkStart = %headerEnd;
-	while(%replacerEnd != -1 && (%checkStart = strPos(%string,"<",%checkStart + 1)) != -1 && %replacerEnd > %checkStart){
+	while(%replacerEnd != -1 && (%checkStart = strPos(%string,"<",%checkStart + 1)) != -1 && %replacerEnd > %checkStart)
+	{
 		if(VCE_getReplacerHeaderEnd(%string,%checkStart))
 			%replacerEnd = strPos(%string,">",%replacerEnd + 1);
 	}
 	//if there is no valid end
 	if(%replacerEnd == -1)
+	{
+		if(%string !$= "")
+		{
+			%brick.VCE_ReplacerLiteral[%brick.VCE_ReplacerLiteralCount++] = %string;
+			%string = "VCE_ReplacerLiteral" @ %brick.VCE_ReplacerLiteralCount;
+		}
 		return %string;
+	}
 	//get parts before replacer
 	%prev = getSubStr(%string,0,%headerStart);
+
+	if(%prev !$= "")
+	{
+		%brick.VCE_ReplacerLiteral[%brick.VCE_ReplacerLiteralCount++] = %prev;
+		%prev = "VCE_ReplacerLiteral" @ %brick.VCE_ReplacerLiteralCount;
+	}
 	//get unparsed parts after the replacer
-	%next = %brick.filterVCEString(getSubStr(%string,%replacerEnd + 1,strLen(%string) - %replacerEnd - 1), %client,%player,%vehicle,%bot,%minigame);
+	%next = getSubStr(%string,%replacerEnd + 1,strLen(%string) - %replacerEnd - 1);
+	%fnext = %brick.filterVCEString(%next, %client,%player,%vehicle,%bot,%minigame);
 	%header = getSubStr(%string,%headerStart,%headerEnd - %headerStart + 1);
 	//everything between header and the end
-	%things = %brick.filterVCEString(getSubStr(%string,%headerEnd + 1, %replacerEnd - %headerEnd - 1), %client,%player,%vehicle,%bot,%minigame);
+	%things = getSubStr(%string,%headerEnd + 1, %replacerEnd - %headerEnd - 1);
+	%fthings = %brick.filterVCEString(%things, %client,%player,%vehicle,%bot,%minigame);
 	//expression
-	if("<e:" $= %header){
+	if((%thingsFieldjunk = %brick.getField(%fthings)) !$= "")
+		%fthings = %thingsFieldjunk;
+	if("<e:" $= %header)
+	{	
+		%count = getWordCount(%things);
+
+		for(%i = 0; %i < %count; %i++)
+		{
+			%word = getWord(%things, %i);
+			if(strPos(%word,"VCE_ReplacerLiteral") == 0)
+			{
+				%things = setWord(%things,%i,%brick.getField(%word));
+			}
+		}
 		//shunting yard algorithm
 		%count = getWordCount(%things);
 		%outputCount = 0;
 		%operatorStackCount = 0;
-		for(%i = 0; %i < %count; %i++){
+		for(%i = 0; %i < %count; %i++)
+		{
 			%word = getWord(%things, %i);
-			if((%currentOperator = $VCE::Server::Operator[%word]) $= ""){
+
+			if(%word $= "")
+				continue;
+			if((%currentOperator = $VCE::Server::Operator[%word]) $= "")
+			{
 				//push onto output queue
 				if(%word $= "("){
 					%operatorStack[%operatorStackCount] = %word;
 					%operatorStackCount++;
 				} else if(%word $= ")"){
 					//pop until you find matching paranthesis
-					while(%operatorStack[%operatorStackCount - 1] !$= "(" && %operatorStackCount > 0){
+					while(%operatorStack[%operatorStackCount - 1] !$= "(" && %operatorStackCount > 0)
+					{
 						//pop and push top operator onto output stack
 						%output[%outputCount] = %operatorStack[%operatorStackCount--];
 						%outputCount++;
@@ -197,7 +302,8 @@ function fxDTSBrick::filterVCEString(%brick,%string,%client,%player,%vehicle,%bo
 					%operatorStackCount--;
 				} else{
 					//normal
-					%output[%outputCount] = %word;
+					//we didn't filter this earlier so do it now
+					%output[%outputCount] = %brick.filterVCEString(%word, %client,%player,%vehicle,%bot,%minigame);
 					%outputCount++;
 				}
 				continue;
@@ -223,7 +329,8 @@ function fxDTSBrick::filterVCEString(%brick,%string,%client,%player,%vehicle,%bo
 		for(%i = 2; %i < %outputCount; %i++){
 			//if it's an operator
 			if(getfieldCount(%operator = %output[%i]) > 1){
-				%output[%i] = doVCEVarFunction(getField(%operator,0), %output[%i - 2],%output[%i - 1]);
+				%brick.VCE_ReplacerFunction[%brick.VCE_ReplacerFunctionCount++] = "doVCEVarFunction" TAB getField(%operator,0) TAB %output[%i - 2] TAB %output[%i - 1];
+				%output[%i] = "VCE_ReplacerFunction" @ %brick.VCE_ReplacerFunctionCount;
 				//shift all values between %i - 1 and %last to starting at %i
 				for(%j = %i - 3; %j >= %last; %j--){
 					%output[%j + 2] = %output[%j];
@@ -234,32 +341,55 @@ function fxDTSBrick::filterVCEString(%brick,%string,%client,%player,%vehicle,%bo
 		%product = %output[%outputcount - 1];
 	} else
 	//variable
-	if("<var:" $= %header && strPos(%things,":") > 0){
+	if("<var:" $= %header && strPos(%fthings,":") > 0)
+	{
 		%ogBrick = %brick;
-		%mode = getSubStr(%things,0,strPos(%things,":"));
-		%var = getSubStr(%things,strPos(%things,":") + 1, 4000);
+		%mode = getSubStr(%fthings,0,strPos(%fthings,":"));
+		%var = getSubStr(%fthings,strPos(%fthings,":") + 1, 4000);
 		%c = 0;
-		if(striPos(%mode,"nb_") == 0){
-			%brick = %brick.getGroup().NTObject_[getSubStr(%mode,3,strlen(%mode) - 3), 0];
-			%mode = "br";
+		%vargroup = %brick.getGroup().varGroup;
+		if(striPos(%mode,"nb_") == 0)
+		{
+			%product = %vargroup TAB "getNamedBrickVariable" TAB  %var TAB getSubStr( %mode ,2, strLen( %mode) - 2 );
+
+			%brick.VCE_ReplacerFunction[%brick.VCE_ReplacerFunctionCount++] =  %product;
+			%product = "VCE_ReplacerFunction" @ %brick.VCE_ReplacerFunctionCount;
 		}
-		if(isObject(%brick) && isObject(%client)){
-			if(isObject(%obj = VCE_getObjectFromVarType(%mode,%brick,%client,%player,%vehicle,%bot,%minigame))){
-				%product = %brick.getGroup().varGroup.getVariable(%var, %obj);
+		else if(isObject(%brick) && isObject(%client))
+		{
+			if(isObject(%obj = VCE_getObjectFromVarType(%mode,%brick,%client,%player,%vehicle,%bot,%minigame)))
+			{
+				%product = %vargroup TAB "getVariable" TAB %var TAB %obj;
+
+				%brick.VCE_ReplacerFunction[%brick.VCE_ReplacerFunctionCount++] =  %product;
+				%product = "VCE_ReplacerFunction" @ %brick.VCE_ReplacerFunctionCount;
 			}
 		}
 		%brick = %ogBrick;
 	} else
 	//functions
-	if("<func:" $= %header && strPos(%things,":") > 0){
-		%mode = getSubStr(%things,0,strPos(%things,":"));
-		%args = strReplace(getSubStr(%things,strPos(%things,":") + 1, 4000),",","\t");
+	if("<func:" $= %header && strPos(%fthings,":") > 0)
+	{
+		%mode = getSubStr(%fthings,0,strPos(%fthings,":"));
+		%args = strReplace(getSubStr(%fthings,strPos(%fthings,":") + 1, 4000),",","\t");
 		if((%func = $VCE::Server::Function[%mode]) !$= "")
-			%product = doVCEVarFunction(%func, getField(%args,0),getFields(%args,1, getFieldCount(%args) - 1));
-	} else{
-		return %prev @ %header @ %things @ ">" @ %next;
+		{
+			%product = "doVCEVarFunction" TAB %func TAB getField(%args,0) TAB getFields(%args,1, getFieldCount(%args) - 1);
+
+			%brick.VCE_ReplacerFunction[%brick.VCE_ReplacerFunctionCount++] =  %product;
+			%product = "VCE_ReplacerFunction" @ %brick.VCE_ReplacerFunctionCount;
+		}
+	} 
+	else
+	{
+
+		return trim(%prev @ %header @ %fthings @ ">" TAB %next);
 	}
-	return %prev @ %product @ %next;
+	
+	
+	return trim(%prev TAB %product TAB %next);
+
+
 }
 
 //for compatibility; this is depricated and does nothing

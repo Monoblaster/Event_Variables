@@ -68,20 +68,35 @@ function VariableGroup::setVariable(%group,%varName,%value,%obj)
 }
 function VariableGroup::getVariable(%group,%varName,%obj)
 {
+	if(!isObject(%obj))
+		return "";
 	%className = %obj.getClassName();
 
 	if(%className $= "ScriptObject" && %obj.class !$= "variablegroup")
 		%className = "MinigameSO";
 
-	%val = 0;
 
 	if(isSpecialVar(%classname,%varName))
-		%val = eval("return" SPC strReplace($VCE::Server::SpecialVar[%className,%varName],"%this",%obj) @ ";");
-	else
-		%val = %group.value[%className,%obj,%varName];
+		return eval("return" SPC strReplace($VCE::Server::SpecialVar[%className,%varName],"%this",%obj) @ ";");
+	return %group.value[%className,%obj,%varName];
+}
+function VariableGroup::setNamedBrickVariable(%group,%varName,%value,%brickName)
+{
+	%group.namedBrickValue[%varName,%brickName] = %value;
+}
+function VariableGroup::getNamedBrickVariable(%group,%varName,%brickName)
+{
+	%obj = %group.client.brickgroup.NTObject[%brickName,0];
 	
-	if(%val $= "")
-		%val = 0;
+	//normal VCE value
+	%val1 = %group.getVariable(%varName, %obj);
+	//namedbrick value
+	%val2 = %group.namedBrickValue[%varName,%brickName];
+
+	%val = %val1;
+
+	if(%val1 $= "")
+		%val = %val2;
 	return %val;
 }
 function isSpecialVar(%classname,%name)
