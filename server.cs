@@ -18,7 +18,7 @@ $VCE::Server::Version = "7.50";
 
 if(isFile("add-ons/system_returntoblockland/server.cs"))
 {
-	RTB_registerPref("Can Edit Special Variables", "VCE", "$Pref::VCE::canEditSpecialVars", "bool", "Event_Variables", 1, 0, 0);
+	RTB_registerPref("Can Non-Admins Edit Special Variables", "VCE", "$Pref::VCE::canEditSpecialVars", "bool", "Event_Variables", 1, 0, 0);
 	RTB_registerPref("Show Vce Handshake", "VCE", "$Pref::Client::ShowVCEHandshake", "bool", "Event_Variables", 0, 0, 0);
 	RTB_registerPref("Loop Delay", "VCE", "$Pref::VCE::LoopDelay", "int 0 30000", "Event_Variables", 33, 0, 0);
 	RTB_registerPref("Event Functions Admin Only", "VCE", "$Pref::VCE::EventFunctionsAdminOnly", "bool", "Event_Variables", 1, 0, 0);
@@ -35,13 +35,14 @@ package VCE_Other
 		return %v;
 	}
 };
-activatePackage(VCE_Other);
 function VCE_initServer()
 {
 	deactivatePackage(VCE_Main);
 	activatePackage(VCE_Main);
 	deactivatePackage(VCE_FireRelayNumFix);
 	activatePackage(VCE_FireRelayNumFix);
+	deactivatePackage(VCE_Other);
+	activatePackage(VCE_Other);
 	//extends the targets of all listed items
 	extendTargetList();
 	//list of operators
@@ -180,44 +181,44 @@ function VCE_initServer()
 		registerSpecialVar(Vehicle,"yaw","getWord(axisToEuler(getWords(%this.getTransform(),3,6)),2)","setYaw");
 		registerSpecialVar(Vehicle,"pitch","getWord(axisToEuler(getWords(%this.getTransform(),3,6)),0)");
 		registerSpecialVar(Vehicle,"roll","getWord(axisToEuler(getWords(%this.getTransform(),3,6)),1)");
-		registerSpecialVar(AIPlayer,"yaw","getYawB(%this)");
-		registerSpecialVar(AIPlayer,"pitch","getPitchB(%this)");
-		registerSpecialVar(AIPlayer,"hat","$hat[%this.hat]");
-		registerSpecialVar(AIPlayer,"accent","$accent[%this.accent]");
-		registerSpecialVar(AIPlayer,"pack","$pack[%this.pack]");
-		registerSpecialVar(AIPlayer,"secondPack","$secondpack[%this.secondpack]");
-		registerSpecialVar(AIPlayer,"hip","$hip[%this.hip]");
-		registerSpecialVar(AIPlayer,"rleg","$rleg[%this.rleg]");
-		registerSpecialVar(AIPlayer,"rarm","$rarm[%this.rarm]");
-		registerSpecialVar(AIPlayer,"lleg","$lleg[%this.lleg]");
-		registerSpecialVar(AIPlayer,"larm","$larm[%this.larm]");
-		registerSpecialVar(AIPlayer,"chest","$chest[%this.chest]");
-		registerSpecialVar(AIPlayer,"decal","%this.decalName","setDecalName");
-		registerSpecialVar(AIPlayer,"face","%this.faceName","setFaceName");
-		registerSpecialVar(AIPlayer,"energy","%this.getEnergyLevel()","setEnergy");
-		registerSpecialVar(AIPlayer,"damage","%this.getDamageLevel()","setDamage");
-		registerSpecialVar(AIPlayer,"health","%this.getDatablock().maxDamage - %this.getDamageLevel()","setHealth");
-		registerSpecialVar(AIPlayer,"velx","getWord(%this.getVelocity(),0)");
-		registerSpecialVar(AIPlayer,"vely","getWord(%this.getVelocity(),1)");
-		registerSpecialVar(AIPlayer,"velz","getWord(%this.getVelocity(),2)");
-		registerSpecialVar(AIPlayer,"vel","getWords(%this.getVelocity(),0,2)","setVelocity");
-		registerSpecialVar(AIPlayer,"posx","getWord(%this.getPosition(),0)");
-		registerSpecialVar(AIPlayer,"posy","getWord(%this.getPosition(),1)");
-		registerSpecialVar(AIPlayer,"posz","getWord(%this.getPosition(),2)");
-		registerSpecialVar(AIPlayer,"pos","%this.getPosition()");
-		registerSpecialVar(AIPlayer,"speed","vectorDist(%this.getVelocity(),\"0 0 0\")");
-		registerSpecialVar(AIPlayer,"crouching","%this.VCETrigger3 $= \"\" ? 0 : %this.VCETrigger3");
-		registerSpecialVar(AIPlayer,"jumping","%this.VCETrigger2 $= \"\" ? 0 : %this.VCETrigger2");
-		registerSpecialVar(AIPlayer,"jetting","%this.VCETrigger4 $= \"\" ? 0 : %this.VCETrigger4");
-		registerSpecialVar(AIPlayer,"firing","%this.VCETrigger0 $= \"\" ? 0 : %this.VCETrigger0");
-		registerSpecialVar(AIPlayer,"sitting","%this.VCESitting $= \"\" ? 0 : %this.VCESitting");
-		registerSpecialVar(AIPlayer,"datablock","%this.getDatablock().uiName");
-		registerSpecialVar(AIPlayer,"weapon","%this.hLastWeapon.getName()","");
-		registerSpecialVar(AIPlayer,"type","%this.hType","");
-		registerSpecialVar(AIPlayer,"state","%this.hState","");
-		registerSpecialVar(AIPlayer,"enabled","%this.hIsEnabled","");
-		registerSpecialVar(MinigameSO,"lastmsg","%this.lastMessage");
-		registerSpecialVar(MinigameSO,"membercount","%this.numMembers");
+		registerSpecialVar(Bot,"yaw","getYawB(%this)");
+		registerSpecialVar(Bot,"pitch","getPitchB(%this)");
+		registerSpecialVar(Bot,"hat","$hat[%this.hat]");
+		registerSpecialVar(Bot,"accent","$accent[%this.accent]");
+		registerSpecialVar(Bot,"pack","$pack[%this.pack]");
+		registerSpecialVar(Bot,"secondPack","$secondpack[%this.secondpack]");
+		registerSpecialVar(Bot,"hip","$hip[%this.hip]");
+		registerSpecialVar(Bot,"rleg","$rleg[%this.rleg]");
+		registerSpecialVar(Bot,"rarm","$rarm[%this.rarm]");
+		registerSpecialVar(Bot,"lleg","$lleg[%this.lleg]");
+		registerSpecialVar(Bot,"larm","$larm[%this.larm]");
+		registerSpecialVar(Bot,"chest","$chest[%this.chest]");
+		registerSpecialVar(Bot,"decal","%this.decalName","setDecalName");
+		registerSpecialVar(Bot,"face","%this.faceName","setFaceName");
+		registerSpecialVar(Bot,"energy","%this.getEnergyLevel()","setEnergy");
+		registerSpecialVar(Bot,"damage","%this.getDamageLevel()","setDamage");
+		registerSpecialVar(Bot,"health","%this.getDatablock().maxDamage - %this.getDamageLevel()","setHealth");
+		registerSpecialVar(Bot,"velx","getWord(%this.getVelocity(),0)");
+		registerSpecialVar(Bot,"vely","getWord(%this.getVelocity(),1)");
+		registerSpecialVar(Bot,"velz","getWord(%this.getVelocity(),2)");
+		registerSpecialVar(Bot,"vel","getWords(%this.getVelocity(),0,2)","setVelocity");
+		registerSpecialVar(Bot,"posx","getWord(%this.getPosition(),0)");
+		registerSpecialVar(Bot,"posy","getWord(%this.getPosition(),1)");
+		registerSpecialVar(Bot,"posz","getWord(%this.getPosition(),2)");
+		registerSpecialVar(Bot,"pos","%this.getPosition()");
+		registerSpecialVar(Bot,"speed","vectorDist(%this.getVelocity(),\"0 0 0\")");
+		registerSpecialVar(Bot,"crouching","%this.VCETrigger3 $= \"\" ? 0 : %this.VCETrigger3");
+		registerSpecialVar(Bot,"jumping","%this.VCETrigger2 $= \"\" ? 0 : %this.VCETrigger2");
+		registerSpecialVar(Bot,"jetting","%this.VCETrigger4 $= \"\" ? 0 : %this.VCETrigger4");
+		registerSpecialVar(Bot,"firing","%this.VCETrigger0 $= \"\" ? 0 : %this.VCETrigger0");
+		registerSpecialVar(Bot,"sitting","%this.VCESitting $= \"\" ? 0 : %this.VCESitting");
+		registerSpecialVar(Bot,"datablock","%this.getDatablock().uiName");
+		registerSpecialVar(Bot,"weapon","%this.hLastWeapon.getName()","");
+		registerSpecialVar(Bot,"type","%this.hType","");
+		registerSpecialVar(Bot,"state","%this.hState","");
+		registerSpecialVar(Bot,"enabled","%this.hIsEnabled","");
+		registerSpecialVar(Minigame,"lastmsg","%this.lastMessage");
+		registerSpecialVar(Minigame,"membercount","%this.numMembers");
 		registerSpecialVar("GLOBAL","date","getDate()");
 		registerSpecialVar("GLOBAL","lastmsg","$VCE::Other::LastMessage");
 		registerSpecialVar("GLOBAL","brickcount","$Server::BrickCount");

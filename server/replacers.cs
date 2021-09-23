@@ -67,25 +67,44 @@ $VCE::Server::TargetToObject[4] = "Vehicle";
 $VCE::Server::TargetToObject[5] = "AIPlayer";
 
 //acts like advanced vce's expression but not as an event we skip 0 because 0 is just a set function
-$VCE::Server::Operator["+"] = 1 TAB 11;
-$VCE::Server::Operator["-"] = 2 TAB 11;
-$VCE::Server::Operator["*"] = 3 TAB 12;
-$VCE::Server::Operator["/"] = 4 TAB 12;
-$VCE::Server::Operator["%"] = 16 TAB 12;
-$VCE::Server::Operator["&&"] = 43 TAB 4;
-$VCE::Server::Operator["||"] = 44 TAB 3;
-$VCE::Server::Operator["&"] = 45 TAB 7; 
-$VCE::Server::Operator["|"] = 46 TAB 5;
-$VCE::Server::Operator["BSR"] = 47 TAB 10;
-$VCE::Server::Operator["BSL"] = 48 TAB 10;
-$VCE::Server::Operator["^"] = 49 TAB 6;
-$VCE::Server::Operator["=="] = 52 TAB 8;
-$VCE::Server::Operator["!="] = 53 TAB 8;
-$VCE::Server::Operator["gT"] = 54 TAB 9;
-$VCE::Server::Operator["lT"] = 55 TAB 9;
-$VCE::Server::Operator["gT="] = 56 TAB 9;
-$VCE::Server::Operator["lT="] = 57 TAB 9;
-$VCE::Server::Operator["s="] = 58 TAB 9;
+$VCE::Server::Operator["+",NUMBER] = 1;
+	$VCE::Server::Operator["+",PRECEDENCE] = 11;
+$VCE::Server::Operator["-",NUMBER] = 2;
+	$VCE::Server::Operator["-",PRECEDENCE] = 11;
+$VCE::Server::Operator["*",NUMBER] = 3;
+	$VCE::Server::Operator["*",PRECEDENCE] = 12;
+$VCE::Server::Operator["/",NUMBER] = 4;
+	$VCE::Server::Operator["/",PRECEDENCE] = 12;
+$VCE::Server::Operator["%",NUMBER] = 16;
+	$VCE::Server::Operator["%",PRECEDENCE] = 12;
+$VCE::Server::Operator["&&",NUMBER] = 43;
+	$VCE::Server::Operator["&&",PRECEDENCE] = 4;
+$VCE::Server::Operator["||",NUMBER] = 44;
+	$VCE::Server::Operator["||",PRECEDENCE] = 3;
+$VCE::Server::Operator["&",NUMBER] = 45;
+	$VCE::Server::Operator["&",PRECEDENCE] = 7;
+$VCE::Server::Operator["|",NUMBER] = 46;
+	$VCE::Server::Operator["|",PRECEDENCE] = 5;
+$VCE::Server::Operator["BSR",NUMBER] = 47;
+	$VCE::Server::Operator["BSR",PRECEDENCE] = 10;
+$VCE::Server::Operator["BSL",NUMBER] = 48;
+	$VCE::Server::Operator["BSL",PRECEDENCE] = 10;
+$VCE::Server::Operator["^",NUMBER] = 49;
+	$VCE::Server::Operator["^",PRECEDENCE] = 6;
+$VCE::Server::Operator["==",NUMBER] = 52;
+	$VCE::Server::Operator["==",PRECEDENCE] = 8;
+$VCE::Server::Operator["!=",NUMBER] = 53;
+	$VCE::Server::Operator["!=",PRECEDENCE] = 8;
+$VCE::Server::Operator["gT",NUMBER] = 54;
+	$VCE::Server::Operator["gT",PRECEDENCE] = 9;
+$VCE::Server::Operator["lT",NUMBER] = 55;
+	$VCE::Server::Operator["lT",PRECEDENCE] = 9;
+$VCE::Server::Operator["gT",NUMBER] = 56;
+	$VCE::Server::Operator["gT",PRECEDENCE] = 9;
+$VCE::Server::Operator["lT",NUMBER] = 57;
+	$VCE::Server::Operator["lT",PRECEDENCE] = 9;
+$VCE::Server::Operator["s=",NUMBER] = 58;
+	$VCE::Server::Operator["s=",PRECEDENCE] = 9;
 $VCE::Server::Function["Power"] = 7;
 $VCE::Server::Function["Pow"] = 7;
 $VCE::Server::Function["radical"] = 8;
@@ -145,20 +164,21 @@ function VCE_getReplacerHeaderEnd(%string,%headerStart){
 	return -1;
 }
 function fxDTSBrick::doVCEReferenceString(%brick,%string)
-{
+{	
 	%referenceCount = getFieldCount(%string);
 
 	for(%i = 0; %i < %referenceCount; %i++)
 	{
 		%reference = getField(%string, %i);
-		%data = %brick.getField(%reference);
+		%data = $VCE[%reference];
 		//is this a function, literal, or none of the above?
-		if(strPos(%reference,"VCE_ReplacerFunction") == 0)
+		if(strPos(%reference,"RF_") == 0)
 		{
 			//is this a object function or a normal function?
 			%obj = getField(%data,0);
 			if(isObject(%obj))
 			{
+				
 				//scirptobject classes aren't stored in classname
 				%className = %obj.getClassName();
 				if(%obj.getClassname() $= "ScriptObject")
@@ -173,9 +193,8 @@ function fxDTSBrick::doVCEReferenceString(%brick,%string)
 					//seperate paramters into a list
 					%c = 0;
 					while((%parameter[%c] = getField(%parameters, %c)) !$= ""){%c++;}
-
 					//call function and get return
-					%product = %obj.call(%function,%parameter0,%parameter1,%parameter2,%parameter3,%parameter4,%parameter5,%parameter6,%parameter7,%parameter8,%parameter9,%parameter10,%parameter11,%parameter12,%parameter13,%parameter14);
+					%product = %obj.VCE_call(%function,%parameter0,%parameter1,%parameter2,%parameter3,%parameter4,%parameter5,%parameter6,%parameter7,%parameter8,%parameter9,%parameter10,%parameter11,%parameter12,%parameter13,%parameter14);
 				}
 
 			}
@@ -198,7 +217,7 @@ function fxDTSBrick::doVCEReferenceString(%brick,%string)
 			}
 			%string = setField(%string,%i,%product);
 		}
-		else if(strPos(%reference,"VCE_ReplacerLiteral") == 0)
+		else if(strPos(%reference,"RL_") == 0)
 		{
 			//a reference to a literal string of some kind
 		    %string = setField(%string,%i,fxDTSBrick::doVCEReferenceString(%brick,%data));
@@ -218,8 +237,8 @@ function fxDTSBrick::filterVCEString(%brick,%string,%client,%player,%vehicle,%bo
 	{
 		if(%string !$= "")
 		{
-			%brick.VCE_ReplacerLiteral[%brick.VCE_ReplacerLiteralCount++] = %string;
-			%string = "VCE_ReplacerLiteral" @ %brick.VCE_ReplacerLiteralCount;
+			$VCE[RL,%brick,$VCE[RLC,%brick]++] = %string;
+			%string = "RL_" @ %brick @ "_" @ $VCE[RLC,%brick];
 		}
 		return %string;
 	}
@@ -236,8 +255,8 @@ function fxDTSBrick::filterVCEString(%brick,%string,%client,%player,%vehicle,%bo
 	{
 		if(%string !$= "")
 		{
-			%brick.VCE_ReplacerLiteral[%brick.VCE_ReplacerLiteralCount++] = %string;
-			%string = "VCE_ReplacerLiteral" @ %brick.VCE_ReplacerLiteralCount;
+			$VCE[RL,%brick,$VCE[RLC,%brick]++] = %string;
+			%string = "RL_" @ %brick @ "_" @ $VCE[RLC,%brick];
 		}
 		return %string;
 	}
@@ -246,8 +265,8 @@ function fxDTSBrick::filterVCEString(%brick,%string,%client,%player,%vehicle,%bo
 
 	if(%prev !$= "")
 	{
-		%brick.VCE_ReplacerLiteral[%brick.VCE_ReplacerLiteralCount++] = %prev;
-		%prev = "VCE_ReplacerLiteral" @ %brick.VCE_ReplacerLiteralCount;
+			$VCE[RL,%brick,$VCE[RLC,%brick]++] = %prev;
+			%prev = "RL_" @ %brick @ "_" @ $VCE[RLC,%brick];
 	}
 	//get unparsed parts after the replacer
 	%next = getSubStr(%string,%replacerEnd + 1,strLen(%string) - %replacerEnd - 1);
@@ -257,7 +276,7 @@ function fxDTSBrick::filterVCEString(%brick,%string,%client,%player,%vehicle,%bo
 	%things = getSubStr(%string,%headerEnd + 1, %replacerEnd - %headerEnd - 1);
 	%fthings = %brick.filterVCEString(%things, %client,%player,%vehicle,%bot,%minigame);
 	//expression
-	if((%thingsFieldjunk = %brick.getField(%fthings)) !$= "")
+	if((%thingsFieldjunk = $VCE[%fthings]) !$= "")
 		%fthings = %thingsFieldjunk;
 	if("<e:" $= %header)
 	{	
@@ -266,7 +285,7 @@ function fxDTSBrick::filterVCEString(%brick,%string,%client,%player,%vehicle,%bo
 		for(%i = 0; %i < %count; %i++)
 		{
 			%word = getWord(%things, %i);
-			if(strPos(%word,"VCE_ReplacerLiteral") == 0)
+			if(strPos(%word,"RL_") == 0)
 			{
 				%things = setWord(%things,%i,%brick.getField(%word));
 			}
@@ -281,7 +300,7 @@ function fxDTSBrick::filterVCEString(%brick,%string,%client,%player,%vehicle,%bo
 
 			if(%word $= "")
 				continue;
-			if((%currentOperator = $VCE::Server::Operator[%word]) $= "")
+			if($VCE::Server::Operator[%word,NUMBER] $= "")
 			{
 				//push onto output queue
 				if(%word $= "("){
@@ -304,18 +323,21 @@ function fxDTSBrick::filterVCEString(%brick,%string,%client,%player,%vehicle,%bo
 					//normal
 					//we didn't filter this earlier so do it now
 					%output[%outputCount] = %brick.filterVCEString(%word, %client,%player,%vehicle,%bot,%minigame);
+					if((%replacer = $VCE[%output[%outputCount]]) !$= "")
+						%output[%outputCount] = %replacer;
 					%outputCount++;
 				}
 				continue;
 			}
+
 			//see if we have any precedence problems
-			while((%operatorStackCount > 0 && getField(%operatorStack[%operatorStackCount - 1], 1) >= getField(%currentOperator,1)) && %word !$= "("){
+			while(%operatorStackCount > 0 && $VCE::Server::Operator[%operatorStack[%operatorStackCount - 1],PRECEDENCE] >= $VCE::Server::Operator[%word,PRECEDENCE] && %word !$= "("){
 				//pop and push top operator onto output stack
 				%output[%outputCount] = %operatorStack[%operatorStackCount--];
 				%outputCount++;
 			}
 			//push current onto the operator stack
-			%operatorStack[%operatorStackCount] = %currentOperator;
+			%operatorStack[%operatorStackCount] = %word;
 			%operatorStackCount++;
 		}
 		//push remaining operators onto the output stack
@@ -328,9 +350,9 @@ function fxDTSBrick::filterVCEString(%brick,%string,%client,%player,%vehicle,%bo
 		%last = 0;
 		for(%i = 2; %i < %outputCount; %i++){
 			//if it's an operator
-			if(getfieldCount(%operator = %output[%i]) > 1){
-				%brick.VCE_ReplacerFunction[%brick.VCE_ReplacerFunctionCount++] = "doVCEVarFunction" TAB getField(%operator,0) TAB %output[%i - 2] TAB %output[%i - 1];
-				%output[%i] = "VCE_ReplacerFunction" @ %brick.VCE_ReplacerFunctionCount;
+			if($VCE::Server::Operator[%output[%i],NUMBER] !$= ""){
+				$VCE[RF,%brick,$VCE[RFC,%brick]++] =  %product = "doVCEVarFunction" TAB $VCE::Server::Operator[%output[%i],NUMBER] TAB %output[%i - 2] TAB %output[%i - 1];
+				%output[%i] = "RF_" @ %brick @ "_" @ $VCE[RFC,%brick];
 				//shift all values between %i - 1 and %last to starting at %i
 				for(%j = %i - 3; %j >= %last; %j--){
 					%output[%j + 2] = %output[%j];
@@ -352,8 +374,8 @@ function fxDTSBrick::filterVCEString(%brick,%string,%client,%player,%vehicle,%bo
 		{
 			%product = %vargroup TAB "getNamedBrickVariable" TAB  %var TAB getSubStr( %mode ,2, strLen( %mode) - 2 );
 
-			%brick.VCE_ReplacerFunction[%brick.VCE_ReplacerFunctionCount++] =  %product;
-			%product = "VCE_ReplacerFunction" @ %brick.VCE_ReplacerFunctionCount;
+			$VCE[RF,%brick,$VCE[RFC,%brick]++] =  %product;
+			%product = "RF_" @ %brick @ "_" @ $VCE[RFC,%brick];
 		}
 		else if(isObject(%brick) && isObject(%client))
 		{
@@ -361,8 +383,8 @@ function fxDTSBrick::filterVCEString(%brick,%string,%client,%player,%vehicle,%bo
 			{
 				%product = %vargroup TAB "getVariable" TAB %var TAB %obj;
 
-				%brick.VCE_ReplacerFunction[%brick.VCE_ReplacerFunctionCount++] =  %product;
-				%product = "VCE_ReplacerFunction" @ %brick.VCE_ReplacerFunctionCount;
+				$VCE[RF,%brick,$VCE[RFC,%brick]++] =  %product;
+				%product = "RF_" @ %brick @ "_" @ $VCE[RFC,%brick];
 			}
 		}
 		%brick = %ogBrick;
@@ -375,9 +397,8 @@ function fxDTSBrick::filterVCEString(%brick,%string,%client,%player,%vehicle,%bo
 		if((%func = $VCE::Server::Function[%mode]) !$= "")
 		{
 			%product = "doVCEVarFunction" TAB %func TAB getField(%args,0) TAB getFields(%args,1, getFieldCount(%args) - 1);
-
-			%brick.VCE_ReplacerFunction[%brick.VCE_ReplacerFunctionCount++] =  %product;
-			%product = "VCE_ReplacerFunction" @ %brick.VCE_ReplacerFunctionCount;
+			$VCE[RF,%brick,$VCE[RFC,%brick]++] =  %product;
+			%product = "RF_" @ %brick @ "_" @ $VCE[RFC,%brick];
 		}
 	} 
 	else
@@ -386,8 +407,7 @@ function fxDTSBrick::filterVCEString(%brick,%string,%client,%player,%vehicle,%bo
 		return trim(%prev @ %header @ %fthings @ ">" TAB %next);
 	}
 	
-	
-	return trim(%prev TAB %product TAB %next);
+	return trim(%prev TAB %product TAB %fnext);
 
 
 }
@@ -464,36 +484,29 @@ function callVCEEventFunction (%eventFunctionName, %arg, %client)
 		}
 	}
 }
-function serverCmdEFD(%client,%catagory,%page)
+function serverCmdFD(%client,%page)
 {
 	%pageLength = 6;
 	if(%page $= "")
 		%page = 1;
-	%catagoryName = $VCE::Server::EventDictionaryCatagory[%catagory - 1];
-	if(%catagory > 0 && %catagory <= $VCE::Server::EventDictionaryCatagoryCount && %page > 0 && %page <= mCeil($VCE::Server::EventDictionaryCatagoryEntryCount[%catagoryName] / %pageLength)){
 		
-		%client.chatMessage("<font:palatino linotype:20>\c2" @ $VCE::Server::ObjectToReplacer[%catagoryName] SPC "Event Functions:");
-		//display Event
-		
-		%c = (%page - 1) * %pageLength;
-		while((%name = $VCE::Server::EventDictionaryCatagoryEntry[%catagoryName,%c]) !$= "" && %c < (%pageLength * (%page))){
-			%client.chatMessage("<font:palatino linotype:20>\c3" @ %c SPC "\c6|\c4" SPC %name);
-			%c++;
-		}
-		%client.chatMessage("<font:palatino linotype:20>\c2Page" SPC %page SPC "out of" SPC mCeil($VCE::Server::EventDictionaryCatagoryEntryCount[%catagoryName] / %pageLength) SPC ", Input the page you want to go to.");
-	} else{
-		%client.chatMessage("<font:palatino linotype:20>\c2Welcome to the Event Function dictionary, enter this command with the catagory's index to see its repalcers.");
-		//display catagorys
-		%c = 0;
-		while((%name = $VCE::Server::EventDictionaryCatagory[%c]) !$= ""){
-			%client.chatMessage("<font:palatino linotype:20>\c3" @ %c + 1 SPC "\c6|\c4" SPC $VCE::Server::ObjectToReplacer[%name]);
-			%c++;
-		}
-		%client.chatMessage("<font:palatino linotype:20>\c2You may not be able to see the whole list, Page Up and Page Down to browse it.");
+	%client.chatMessage("<font:palatino linotype:20>\c2ModVariable Functions:");
+	//display Event
+	
+	%c = (%page - 1) * %pageLength;
+	while((%name = $VCE::Server::EventDictionaryCatagoryEntry[%catagoryName,%c]) !$= "" && %c < (%pageLength * (%page))){
+		%client.chatMessage("<font:palatino linotype:20>\c3" @ %c SPC "\c6|\c4" SPC %name);
+		%c++;
 	}
+	%client.chatMessage("<font:palatino linotype:20>\c2Page" SPC %page SPC "out of" SPC mCeil($VCE::Server::EventDictionaryCatagoryEntryCount[%catagoryName] / %pageLength) SPC ", Input the page you want to go to.");
+
 }
 function serverCmdSVD(%client,%catagory,%page)
 {
+	//we only want special variable dictionarys visible if you need it
+	if(!($Pref::VCE::canEditSpecialVars && %client.isAdmin && %client.brickgroup.vargroup))
+		return;
+
 	%pageLength = 6;
 	if(%page $= "")
 		%page = 1;
@@ -502,10 +515,10 @@ function serverCmdSVD(%client,%catagory,%page)
 		
 		%client.chatMessage("<font:palatino linotype:20>\c2" @ $VCE::Server::ObjectToReplacer[%catagoryName] SPC "Variable Replacers:");
 		//display replacers
-		
 		%c = (%page - 1) * %pageLength;
+		talk($VCE::Server::SpecialVariableObject[%client,$VCE::Server::ObjectToReplacer[%catagoryName]]);
 		while((%name = $VCE::Server::ReplacerDictionaryCatagoryEntry[%catagoryName,%c]) !$= "" && %c < (%pageLength * (%page))){
-			%client.chatMessage("<font:palatino linotype:20>\c3" @ %c SPC "\c6|\c4" SPC %name);
+			%client.chatMessage("<font:palatino linotype:20>\c3" @ %c SPC "\c6|\c4" SPC %name SPC "(ex:" SPC trim(%client.brickgroup.vargroup.getVariable(%name,$VCE::Server::SpecialVariableObject[%client,$VCE::Server::ObjectToReplacer[%catagoryName]])) @ ")");
 			%c++;
 		}
 		%client.chatMessage("<font:palatino linotype:20>\c2Page" SPC %page SPC "out of" SPC mCeil($VCE::Server::ReplacerDictionaryCatagoryEntryCount[%catagoryName] / %pageLength) SPC ", Input the page you want to go to.");

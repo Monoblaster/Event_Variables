@@ -14,191 +14,40 @@ $VCEisEventParameterType["datablock"] = 1;
 $VCEisEventParameterType["string"] = 1;
 $VCEisEventParameterType["vector"] = 1;
 $VCEisEventParameterType["paintColor"] = 1;
-//MIM between proccessing and actual event calling
-function SimObject::VCEReferenceStringCleanup(%obj,%lineNumber)
-{
-	%p = 0;
-	while(%p++ < 5)
-		%obj.VCE_ReferenceString[%lineNumber,%p] = "";
-
-}
-
-function SimObject::VCECallEvent(%obj, %outputEvent, %brick, %client,%player,%vehicle,%bot,%minigame, %passClient,%eventLineNumber, %par1, %par2, %par3, %par4)
-{
-	%classname = %obj.getClassName();
-
-
-	%targetClass = inputEvent_GetTargetClass("fxDTSBrick", %brick.eventInputIdx[%eventLineNumber], %brick.eventTargetIdx[%eventLineNumber]);
-
-	//loop through replacing parameter string with the eval string equivilent
-	for(%i = 1; %i <= 4; %i++)
-	{
-		if((%referenceString = %brick.VCE_ReferenceString[%eventLineNumber,%i]) $= "")
-			continue;
-
-		%par[%i] = %brick.doVCEReferenceString(%referenceString);
-	}
-
-	%parCount = outputEvent_GetNumParametersFromIdx(%targetClass, %brick.eventOutputIdx[%eventLineNumber]);
-
-	%vargroup = %brick.getGroup().vargroup;
-
-	//there's some special vce functions we want to call within this scope so they have access to needed references
-	if(%outPutEvent $= "VCE_modVariable")
-	{
-		//is this setting a named brick's variable?
-		%toNamedBrick = %obj != %brick || %obj.getName() !$= "";
-
-		//adding context to parameters
-		if(%obj.getClassName() $= "fxDtsBrick")
-		{
-			%obj = VCE_getObjectFromVarType(%par1,%obj,%client,%player,%vehicle,%bot,%minigame);
-
-			%varName = %par2;
-			%logic = %par3;
-			%value = %par4;
-
-		}
-		else
-		{
-			%varName = %par1;
-			%logic = %par2;
-			%value = %par3;
-
-			
-		}	
-		
-		%oldvalue = %vargroup.getVariable(%varName,%obj);
-
-		%newvalue = %value;
-
-		%newValue = doVCEVarFunction(%logic, %oldValue, %newValue);
-
-		%vargroup.setVariable(%varName,%newValue,%obj);
-		if(%toNamedBrick)
-			%varGroup.setNamedBrickVariable(%varName,%newValue,%obj.getName());
-
-		%obj.processInputEvent("onVariableUpdate", %client);
-	}
-	else if (%outPutEvent $= "VCE_retroCheck" || %outPutEvent $= "VCE_ifVariable" || %outPutEvent $= "VCE_ifValue")
-	{
-		if(%outPutEvent $= "VCE_retroCheck")
-		{
-			//adding context to parameters
-			%vala = %par1;
-			%logic = %par2;
-			%valb = %par3;
-			%subdata = %par4;
-
-			//ifPlayerName 0 ifPlayerID 1 ifAdmin 2 ifPlayerEnergy 3 ifPlayerDamage 4 ifPlayerScore 5 ifLastPlayerMsg 6 ifBrickName 7 ifRandomDice 8
-			if(%vala == 0)
-				%vala = %client.name;
-			else if(%vala == 1)
-				%vala = %client.BL_ID;
-			else if(%vala == 2){
-				%vala = %client.isAdmin;
-				%valb = %client.isAdmin == 1 ? 1 : -1;
-			} else if(%vala == 3){
-				%vala = 0;
-				if(isObject(%client.player))
-					%vala = %client.player.getEnergyLevel();
-			} else if(%vala == 4){
-				%vala = 0;
-				if(isObject(%client.player))
-					%vala = %client.player.getDamageLevel();
-			} else if(%vala == 5)
-				%vala = %client.score;
-			else if(%vala == 6)
-				%vala = %client.lastMessage;
-			else if(%vala == 7){
-				if(strLen(%brick.getName()) >= 1)
-					%vala = getSubStr(%brick.getName(),1,strLen(%brick.getName()) - 1);
-			} else if(%vala == 8)
-				%vala = getRandom(1,6);
-			
-		}
-		else if(%outPutEvent $= "VCE_ifVariable")
-		{
-			//adding context to parameters
-			%var = %par1;
-			%logic = %par2;
-			%valb = %par3;
-			%subdata = %par4;
-
-			for(%i = 0; %i < getWordCount(%var); %i++){
-				if((%value = %vargroup.getVariable(getWord(%var ,%i), %obj)) !$= ""){
-					%var = setWord(%var, %i, %value);
-				}
-			}
-			%vala = %var;
-		}
-		else
-		{
-			//adding context to parameters
-			%vala = %par1;
-			%logic = %par2;
-			%valb = %par3;
-			%subdata = %par4;
-		}
-
-		if(!isObject(%client))
-			return;
-
-		%test = doVCEVarFunction(%logic + 52,%vala,%valb);
-
-		%subStart = getWord(%subData,0);
-		%subEnd = getWord(%subData,1);
-
-		if(%subStart $= "")
-			%subStart = -1;
-		if(%subEnd $= "")	
-			%subEnd =  -1;
-		if(%test)
-			%brick.VCE_ProcessVCERange(%subStart, %subEnd, "onVariableTrue", %client);
-		else
-			%brick.VCE_ProcessVCERange(%subStart, %subEnd, "onVariableFalse", %client);
-	}
-	else if(%passClient)
-	{
-		//call the event correctly with the right number of paramter
-		//for some reason some events have error detection for the wrong number of paramters
-		//we could use eval but i'd rather not be compiling code during runtime
-		if(%parCount == 0)
-				%obj.call(%outputEvent,%client);
-		if(%parCount == 1)
-				%obj.call(%outputEvent,%par1,%client);
-		if(%parCount == 2)
-				%obj.call(%outputEvent,%par1,%par2,%client);
-		if(%parCount == 3)
-				%obj.call(%outputEvent,%par1,%par2,%par3,%client);
-		if(%parCount == 4)
-				%obj.call(%outputEvent,%par1,%par2,%par3,%par4,%client);	
-	}
-	else
-	{
-		if(%parCount == 0)
-			%obj.call(%outputEvent);
-		if(%parCount == 1)
-			%obj.call(%outputEvent,%par1);
-		if(%parCount == 2)
-			%obj.call(%outputEvent,%par1,%par2);
-		if(%parCount == 3)
-			%obj.call(%outputEvent,%par1,%par2,%par3);
-		if(%parCount == 4)
-			%obj.call(%outputEvent,%par1,%par2,%par3,%par4);	
-	}
-}
 package VCE_Main
 {
+	//packages for figuring out special variable examples
+	function GameConnection::autoAdminCheck(%client)
+	{
+		$VCE::Server::SpecialVariableObject[%client,CLIENT] = %client;
+		Parent::autoAdminCheck(%client);
+	}
+	function Armor::onAdd(%this, %obj)
+	{
+		if(%obj.client.getClassName() $= "GameConnection")
+			$VCE::Server::SpecialVariableObject[%obj.client,PLAYER] = %obj;
+		else
+			$VCE::Server::SpecialVariableObject[%obj.client,BOT] = %obj;
+
+		Parent::onAdd(%this, %obj);
+	}
+	function fxDtsBrick::spawnVehicle(%brick)
+	{
+		Parent::spawnVehicle(%brick);
+
+		$VCE::Server::SpecialVariableObject[%brick.getGroup().client,VEHICLE] = %brick.vehicle;
+	}
 	function fxDtsBrick::onPlant(%brick)
 	{
 		VCE_createVariableGroup(%brick);
-		
+		$VCE::Server::SpecialVariableObject[%brick.getGroup().client,BRICK] = %brick;
+
 		return Parent::onPlant(%brick);
 	}
 	function fxDtsBrick::onLoadPlant(%brick)
 	{
 		VCE_createVariableGroup(%brick);
+		$VCE::Server::SpecialVariableObject[%brick.getGroup().client,BRICK] = %brick;
 		
 		return Parent::onLoadPlant(%brick);
 	}
@@ -248,22 +97,22 @@ package VCE_Main
 		if(%i == 0)
 		{
 			//spaghetti code because i don't feel like making an initlizing function
-			%brick.VCE_ReplacerFunctionCount = 0;
-			%brick.VCE_ReplacerLiteralCount = 0;
+			$VCE[RFC,%brick] = 0;
+			$VCE[RLC,%brick] = 0;
 		}
 
 		//remove previous reference strings
-		%brick.VCEReferenceStringCleanup(%i);
+		deleteVariables("$VCE_ReferenceString"@%obj@"_"@%i@"_*");
 		
 		for(%j = 0; %j < %parameterWordCount; %j++)
 		{
 			%word = getWord(%parameterWords, %j);
 			if(%word $= "string"){
 				//cleansing strings because you can crash by self referencing
-				%par[%c] = strReplace(%par[%c], "VCE_ReplacerFunction", "");
-				%par[%c] = strReplace(%par[%c], "VCE_ReplacerLiteral", "");
+				%par[%c] = strReplace(%par[%c], "RF_", "");
+				%par[%c] = strReplace(%par[%c], "RL_", "");
 				//filtering and creating a reference string
-				%brick.VCE_ReferenceString[%i,%c] = trim(%brick.filterVCEString(%par[%c],%client,%player,%vehicle,%bot,%minigame));
+				$VCE_ReferenceString[%brick,%i,%c] = trim(%brick.filterVCEString(%par[%c],%client,%client.player,%brick.vehicle,%brick.hbot,%client.minigame));
 			}
 			if($VCEisEventParameterType[%word])
 			{
@@ -271,7 +120,7 @@ package VCE_Main
 			}	
 
 		}
-		
+		%brick.VCE_Parsed = true;
 		//startfunction setup
 		if(%outputName $= "VCE_StartFunction"){
 			%brick.VCE_startFunction(%par1,%par2,%par3,%client);

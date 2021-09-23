@@ -53,7 +53,7 @@ function VariableGroup::setVariable(%group,%varName,%value,%obj)
 	
 	if(isSpecialVar(%classname,%varName))
 	{
-		if($Pref::VCE::canEditSpecialVars)
+		if($Pref::VCE::canEditSpecialVars || %group.client.isAdmin)
 		{
 			%f = "VCE_" @ $VCE::Server::ObjectToReplacer[%className] @ "_" @ $VCE::Server::SpecialVarEdit[%className,%varName];
 			if(isFunction(%f))
@@ -74,7 +74,6 @@ function VariableGroup::getVariable(%group,%varName,%obj)
 
 	if(%className $= "ScriptObject" && %obj.class !$= "variablegroup")
 		%className = "MinigameSO";
-
 
 	if(isSpecialVar(%classname,%varName))
 		return eval("return" SPC strReplace($VCE::Server::SpecialVar[%className,%varName],"%this",%obj) @ ";");
