@@ -36,6 +36,7 @@ package VCE_Main
 		Parent::spawnVehicle(%brick);
 
 		$VCE::Server::SpecialVariableObject[%brick.getGroup().client,VEHICLE] = %brick.vehicle;
+		talk(%brick.vehicle);
 	}
 	function fxDtsBrick::onPlant(%brick)
 	{

@@ -68,11 +68,14 @@ function VariableGroup::setVariable(%group,%varName,%value,%obj)
 }
 function VariableGroup::getVariable(%group,%varName,%obj)
 {
+	talk(%varName SPC %Obj);
 	if(!isObject(%obj))
 		return "";
 	%className = %obj.getClassName();
 
 	if(%className $= "ScriptObject" && %obj.class !$= "variablegroup")
+		%className = "MinigameSO";
+	if(%className $= "Wheeled" && %obj.class !$= "variablegroup")
 		%className = "MinigameSO";
 
 	if(isSpecialVar(%classname,%varName))
