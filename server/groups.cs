@@ -68,18 +68,35 @@ function VariableGroup::setVariable(%group,%varName,%value,%obj)
 }
 function VariableGroup::getVariable(%group,%varName,%obj)
 {
-	talk(%varName SPC %Obj);
 	if(!isObject(%obj))
 		return "";
 	%className = %obj.getClassName();
 
 	if(%className $= "ScriptObject" && %obj.class !$= "variablegroup")
-		%className = "MinigameSO";
-	if(%className $= "Wheeled" && %obj.class !$= "variablegroup")
-		%className = "MinigameSO";
+	{
+		%className = "Minigame";
+		if(!isSpecialVar(%classname,%varName))
+		{
+			%className = "MinigameSO";
+		}
+	}
+		
+	if(%className $= "AIPlayer")
+		%className = "Bot";
+	if(strPos(%className,"Vehicle") >= 0 && %obj.class !$= "variablegroup")
+		%className = "Vehicle";
 
+	%func = $VCE::Server::SpecialVar[%className,%varName];
+	if(%func $= "" && %className $= "GameConnection")
+	{
+		%classname = "GLOBAL";
+		%func = $VCE::Server::SpecialVar["GLOBAL",%varName];
+	}
+	
 	if(isSpecialVar(%classname,%varName))
-		return eval("return" SPC strReplace($VCE::Server::SpecialVar[%className,%varName],"%this",%obj) @ ";");
+	{
+		return eval("return" SPC strReplace(%func,"%this",%obj) @ ";");
+	}
 	return %group.value[%className,%obj,%varName];
 }
 function VariableGroup::setNamedBrickVariable(%group,%varName,%value,%brickName)

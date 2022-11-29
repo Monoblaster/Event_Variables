@@ -46,7 +46,9 @@ $VCE::Server::ObjectToReplacer["Player"] = "Player";
 $VCE::Server::ObjectToReplacer["fxDTSBrick"] = "Brick";
 $VCE::Server::ObjectToReplacer["Vehicle"] = "Vehicle";
 $VCE::Server::ObjectToReplacer["AIPlayer"] = "Bot";
+$VCE::Server::ObjectToReplacer["Bot"] = "Bot";
 $VCE::Server::ObjectToReplacer["MinigameSO"] = "Minigame";
+$VCE::Server::ObjectToReplacer["Minigame"] = "Minigame";
 $VCE::Server::ObjectToReplacer["Global"] = "Global";
 //Event Targets to Object Classes
 $VCE::Server::TargetToObject["Client"] = "GameConnection";
@@ -518,7 +520,6 @@ function serverCmdSVD(%client,%catagory,%page)
 		%c = (%page - 1) * %pageLength;
 		
 		while((%name = $VCE::Server::ReplacerDictionaryCatagoryEntry[%catagoryName,%c]) !$= "" && %c < (%pageLength * (%page))){
-			talk($VCE::Server::SpecialVariableObject[%client,$VCE::Server::ObjectToReplacer[%catagoryName]]);
 			%client.chatMessage("<font:palatino linotype:20>\c3" @ %c SPC "\c6|\c4" SPC %name SPC "(ex:" SPC trim(%client.brickgroup.vargroup.getVariable(%name,$VCE::Server::SpecialVariableObject[%client,$VCE::Server::ObjectToReplacer[%catagoryName]])) @ ")");
 			%c++;
 		}
@@ -539,13 +540,13 @@ function registerSpecialVar(%classname,%name,%script,%editscript,%arg1,%arg2,%ar
 	if($VCE::Server::SpecialVar[%classname,%name] !$= "")
 		echo("registerSpecialVar() - Variable" SPC %name SPC "already exists on" SPC %classname @ ". Overwriting...");
 	//replacer dictionary
-	if(!$VCE::Server::ReplacerDictionaryCatagoryExists[%className]){
+	if(!$VCE::Server::ReplacerDictionaryCatagoryExists[$VCE::Server::ObjectToReplacer[%className]]){
 		$VCE::Server::ReplacerDictionaryCatagory[$VCE::Server::ReplacerDictionaryCatagoryCount++ - 1] = %className;
-		$VCE::Server::ReplacerDictionaryCatagoryExists[%className] = 1;
+		$VCE::Server::ReplacerDictionaryCatagoryExists[$VCE::Server::ObjectToReplacer[%className]] = 1;
 	}
-	if(!$VCE::Server::ReplacerDictionaryCatagoryEntryExists[%className,%name]){
+	if(!$VCE::Server::ReplacerDictionaryCatagoryEntryExists[$VCE::Server::ObjectToReplacer[%className],%name]){
 		$VCE::Server::ReplacerDictionaryCatagoryEntry[%className,$VCE::Server::ReplacerDictionaryCatagoryEntryCount[%className]++ - 1] = %name;
-		$VCE::Server::ReplacerDictionaryCatagoryEntryExists[%className,%name] = 1;
+		$VCE::Server::ReplacerDictionaryCatagoryEntryExists[$VCE::Server::ObjectToReplacer[%className],%name] = 1;
 	}
 	$VCE::Server::SpecialVar[%classname,%name] = %script;
 	$VCE::Server::SpecialVarEdit[%classname,%name] = %editscript;

@@ -17,17 +17,17 @@ $VCEisEventParameterType["paintColor"] = 1;
 package VCE_Main
 {
 	//packages for figuring out special variable examples
-	function GameConnection::autoAdminCheck(%client)
+	function GameConnection::OnAdd(%client)
 	{
+		$VCE::Server::SpecialVariableObject[%client,GLOBAL] = %client;
 		$VCE::Server::SpecialVariableObject[%client,CLIENT] = %client;
-		Parent::autoAdminCheck(%client);
 	}
 	function Armor::onAdd(%this, %obj)
 	{
-		if(%obj.client.getClassName() $= "GameConnection")
+		if(isObject(%obj.client) && %obj.client.getClassName() $= "GameConnection")
 			$VCE::Server::SpecialVariableObject[%obj.client,PLAYER] = %obj;
 		else
-			$VCE::Server::SpecialVariableObject[%obj.client,BOT] = %obj;
+			$VCE::Server::SpecialVariableObject[%obj.spawnBrick.getGroup().client,BOT] = %obj;
 
 		Parent::onAdd(%this, %obj);
 	}
@@ -36,7 +36,6 @@ package VCE_Main
 		Parent::spawnVehicle(%brick);
 
 		$VCE::Server::SpecialVariableObject[%brick.getGroup().client,VEHICLE] = %brick.vehicle;
-		talk(%brick.vehicle);
 	}
 	function fxDtsBrick::onPlant(%brick)
 	{
@@ -51,6 +50,12 @@ package VCE_Main
 		$VCE::Server::SpecialVariableObject[%brick.getGroup().client,BRICK] = %brick;
 		
 		return Parent::onLoadPlant(%brick);
+	}
+	function MinigameSO::AddMember(%mg,%client)
+	{
+		Parent::AddMember(%mg,%client);
+
+		$VCE::Server::SpecialVariableObject[%client,MINIGAME] = %mg;
 	}
 	function servercmdMessageSent(%client,%message)
 	{
