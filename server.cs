@@ -60,10 +60,10 @@ function VCE_initServer()
 	//registerOutputEvent(fxDtsBrick,"VCE_castRelay","list Up 0 Down 1 North 2 East 3 South 4 West 5\tint 1 96 2",1);
  	registerOutputEvent(fxDtsBrick,"VCE_saveVariable","list Client 2 Player 1 Brick 0 Local 6\tstring 200 255",1);
  	registerOutputEvent(fxDtsBrick,"VCE_loadVariable","list Client 2 Player 1 Brick 0 Local 6\tstring 200 255",1);
-	registerInputEvent(fxDtsBrick,"onVariableTrue","Self fxDtsBrick\tPlayer Player\tClient GameConnection\tMinigame Minigame");
-	registerInputEvent(fxDtsBrick,"onVariableFalse","Self fxDtsBrick\tPlayer Player\tClient GameConnection\tMinigame Minigame");
-	registerInputEvent(fxDtsBrick,"onVariableFunction","Self fxDtsBrick\tPlayer Player\tClient GameConnection\tMinigame Minigame");
-	registerInputEvent(fxDtsBrick,"onVariableUpdate","Self fxDtsBrick\tPlayer Player\tClient GameConnection\tMinigame Minigame");
+	rregisterInputEvent(fxDtsBrick,"onVariableTrue","Self fxDtsBrick\tPlayer Player\tBot Bot\tClient GameConnection\tMinigame Minigame");
+	registerInputEvent(fxDtsBrick,"onVariableFalse","Self fxDtsBrick\tPlayer Player\tBot Bot\tClient GameConnection\tMinigame Minigame");
+	registerInputEvent(fxDtsBrick,"onVariableFunction","Self fxDtsBrick\tPlayer Player\tBot Bot\tClient GameConnection\tMinigame Minigame");
+	registerInputEvent(fxDtsBrick,"onVariableUpdate","Self fxDtsBrick\tPlayer Player\tBot Bot\tClient GameConnection\tMinigame Minigame");
 	registerOutputEvent(Player,"VCE_ifVariable","string 100 100\tlist == 0 != 1 > 2 < 3 >= 4 <= 5 ~= 6\tstring 100 100\tstring 8 30",1);
 	registerOutputEvent(Player,"VCE_modVariable","string 180 100" @ %functionParameter @ "\tstring 180 255",1);
 	registerOutputEvent(GameConnection,"VCE_ifVariable","string 100 100\tlist == 0 != 1 > 2 < 3 >= 4 <= 5 ~= 6\tstring 100 100\tstring 8 30",1);
