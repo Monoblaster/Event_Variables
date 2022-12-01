@@ -60,7 +60,7 @@ function VCE_initServer()
 	//registerOutputEvent(fxDtsBrick,"VCE_castRelay","list Up 0 Down 1 North 2 East 3 South 4 West 5\tint 1 96 2",1);
  	registerOutputEvent(fxDtsBrick,"VCE_saveVariable","list Client 2 Player 1 Brick 0 Local 6\tstring 200 255",1);
  	registerOutputEvent(fxDtsBrick,"VCE_loadVariable","list Client 2 Player 1 Brick 0 Local 6\tstring 200 255",1);
-	rregisterInputEvent(fxDtsBrick,"onVariableTrue","Self fxDtsBrick\tPlayer Player\tBot Bot\tClient GameConnection\tMinigame Minigame");
+	registerInputEvent(fxDtsBrick,"onVariableTrue","Self fxDtsBrick\tPlayer Player\tBot Bot\tClient GameConnection\tMinigame Minigame");
 	registerInputEvent(fxDtsBrick,"onVariableFalse","Self fxDtsBrick\tPlayer Player\tBot Bot\tClient GameConnection\tMinigame Minigame");
 	registerInputEvent(fxDtsBrick,"onVariableFunction","Self fxDtsBrick\tPlayer Player\tBot Bot\tClient GameConnection\tMinigame Minigame");
 	registerInputEvent(fxDtsBrick,"onVariableUpdate","Self fxDtsBrick\tPlayer Player\tBot Bot\tClient GameConnection\tMinigame Minigame");
