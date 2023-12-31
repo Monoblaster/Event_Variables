@@ -670,8 +670,6 @@ function VariableGroup::GetLocalFunctionFromBrick(%varGroup,%name,%brick)
 }
 function fxDTSBrick::VCE_callFunction(%obj,%name,%args,%delay,%client)
 {
-	if(!isObject(%client))
-		return;
 	if(isObject(%obj.getGroup().vargroup))
 	{
 		%varGroup = %obj.getGroup().vargroup;
@@ -694,7 +692,7 @@ function fxDTSBrick::VCE_callFunction(%obj,%name,%args,%delay,%client)
 
 			%varGroup.setVariable("argcount",getFieldCount(%args),%obj);
 
-			%obj.VCE_ProcessVCERange(%subStart, %subEnd, "onVariableFunction", %client);
+			%obj.VCE_ProcessVCERange(%subStart, %subEnd, "onVariableFunction",%client);
 		} 
 		else if((%count = %vargroup.vceLocalFunctionCount[%name]) > 0)
 		{
@@ -717,7 +715,7 @@ function fxDTSBrick::VCE_callFunction(%obj,%name,%args,%delay,%client)
 
 				%varGroup.setVariable("argcount",getFieldCount(%args),%localBrick);
 
-				%localbrick.VCE_ProcessVCERange(%subStart, %subEnd, "onVariableFunction", %client);
+				%localbrick.VCE_ProcessVCERange(%subStart, %subEnd, "onVariableFunction",%client);
 			}
 		}
 		
