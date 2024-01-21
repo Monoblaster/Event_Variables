@@ -406,7 +406,7 @@ function fxDTSBrick::filterVCEString(%brick,%string,%client,%player,%vehicle,%bo
 	else
 	{
 
-		return trim(%prev @ %header @ %fthings @ ">" TAB %next);
+		return trim(%prev @ %header @ %fthings @ ">" TAB %fnext);
 	}
 	
 	return trim(%prev TAB %product TAB %fnext);
