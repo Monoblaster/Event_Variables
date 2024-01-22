@@ -68,6 +68,11 @@ function VariableGroup::setVariable(%group,%varName,%value,%obj)
 }
 function VariableGroup::getVariable(%group,%varName,%obj)
 {
+	if(%obj $= "GLOBAL")
+	{
+		return eval("return" SPC strReplace($VCE::Server::SpecialVar["GLOBAL",%varname],"%this",%obj) @ ";");
+	}
+
 	if(!isObject(%obj))
 		return "";
 	%className = %obj.getClassName();
@@ -85,17 +90,10 @@ function VariableGroup::getVariable(%group,%varName,%obj)
 		%className = "Bot";
 	if(strPos(%className,"Vehicle") >= 0 && %obj.class !$= "variablegroup")
 		%className = "Vehicle";
-
-	%func = $VCE::Server::SpecialVar[%className,%varName];
-	if(%func $= "" && %className $= "GameConnection")
-	{
-		%classname = "GLOBAL";
-		%func = $VCE::Server::SpecialVar["GLOBAL",%varName];
-	}
-	
+		
 	if(isSpecialVar(%classname,%varName))
 	{
-		return eval("return" SPC strReplace(%func,"%this",%obj) @ ";");
+		return eval("return" SPC strReplace($VCE::Server::SpecialVar[%classname,%varname],"%this",%obj) @ ";");
 	}
 	return %group.value[%className,%obj,%varName];
 }

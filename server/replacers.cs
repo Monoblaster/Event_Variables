@@ -168,7 +168,6 @@ function VCE_getReplacerHeaderEnd(%string,%headerStart){
 function fxDTSBrick::doVCEReferenceString(%brick,%string)
 {	
 	%referenceCount = getFieldCount(%string);
-
 	for(%i = 0; %i < %referenceCount; %i++)
 	{
 		%reference = getField(%string, %i);
@@ -191,7 +190,6 @@ function fxDTSBrick::doVCEReferenceString(%brick,%string)
 				{
 					//is there any references in the parameters?
 					%parameters = %brick.doVCEReferenceString(getFields(%data,2, getFieldCount(%data) - 1));
-					
 					//seperate paramters into a list
 					%c = 0;
 					while((%parameter[%c] = getField(%parameters, %c)) !$= ""){%c++;}
@@ -211,7 +209,6 @@ function fxDTSBrick::doVCEReferenceString(%brick,%string)
 					//seperate paramters into a list
 					%c = 0;
 					while((%parameter[%c] = getField(%parameters, %c)) !$= ""){%c++;}
-
 					//call function and get return
 					%product = call(%function,%parameter0,%parameter1,%parameter2,%parameter3,%parameter4,%parameter5,%parameter6,%parameter7,%parameter8,%parameter9,%parameter10,%parameter11,%parameter12,%parameter13,%parameter14);
 				}
@@ -280,6 +277,7 @@ function fxDTSBrick::filterVCEString(%brick,%string,%client,%player,%vehicle,%bo
 	//expression
 	if((%thingsFieldjunk = $VCE[%fthings]) !$= "")
 		%fthings = %thingsFieldjunk;
+
 	if("<e:" $= %header)
 	{	
 		%count = getWordCount(%things);
@@ -405,13 +403,10 @@ function fxDTSBrick::filterVCEString(%brick,%string,%client,%player,%vehicle,%bo
 	} 
 	else
 	{
-
-		return trim(%prev @ %header @ %fthings @ ">" TAB %fnext);
+		$VCE[%prev] = $VCE[%prev] @ %header @ %fthings @ ">";
+		return trim(%prev TAB %fnext);
 	}
-	
 	return trim(%prev TAB %product TAB %fnext);
-
-
 }
 
 //for compatibility; this is depricated and does nothing

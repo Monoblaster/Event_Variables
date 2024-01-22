@@ -19,7 +19,7 @@ package VCE_Main
 	//packages for figuring out special variable examples
 	function GameConnection::OnAdd(%client)
 	{
-		$VCE::Server::SpecialVariableObject[%client,GLOBAL] = %client;
+		$VCE::Server::SpecialVariableObject[%client,GLOBAL] = "GLOBAL";
 		$VCE::Server::SpecialVariableObject[%client,CLIENT] = %client;
 	}
 	function Armor::onAdd(%this, %obj)
