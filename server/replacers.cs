@@ -261,11 +261,11 @@ function fxDTSBrick::filterVCEString(%brick,%string,%client,%player,%vehicle,%bo
 	}
 	//get parts before replacer
 	%prev = getSubStr(%string,0,%headerStart);
-
+	
 	if(%prev !$= "")
 	{
-			$VCE[RL,%brick,$VCE[RLC,%brick]++] = %prev;
-			%prev = "RL_" @ %brick @ "_" @ $VCE[RLC,%brick];
+		$VCE[RL,%brick,$VCE[RLC,%brick]++] = %prev;
+		%prev = "RL_" @ %brick @ "_" @ $VCE[RLC,%brick];
 	}
 	//get unparsed parts after the replacer
 	%next = getSubStr(%string,%replacerEnd + 1,strLen(%string) - %replacerEnd - 1);
@@ -403,6 +403,12 @@ function fxDTSBrick::filterVCEString(%brick,%string,%client,%player,%vehicle,%bo
 	} 
 	else
 	{
+		if($prev $= "")
+		{
+			$VCE[RL,%brick,$VCE[RLC,%brick]++] = %header @ %fthings @ ">";
+			return trim("RL_" @ %brick @ "_" @ $VCE[RLC,%brick] TAB %fnext);
+		}
+
 		$VCE[%prev] = $VCE[%prev] @ %header @ %fthings @ ">";
 		return trim(%prev TAB %fnext);
 	}
