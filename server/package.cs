@@ -114,11 +114,8 @@ package VCE_Main
 		{
 			%word = getWord(%parameterWords, %j);
 			if(%word $= "string"){
-				//cleansing strings because you can crash by self referencing
-				%par[%c] = strReplace(%par[%c], "RF_", "");
-				%par[%c] = strReplace(%par[%c], "RL_", "");
 				//filtering and creating a reference string
-				$VCE_ReferenceString[%brick,%i,%c] = trim(%brick.filterVCEString(%par[%c],%client,%client.player,%brick.vehicle,%brick.hbot,%client.minigame));
+				$VCE_ReferenceString[%brick,%i,%c] = trim(%brick.filterVCEString(strReplace(strReplace(%par[%c], "RF_", ""), "RL_", ""),%client,%client.player,%brick.vehicle,%brick.hbot,%client.minigame));
 			}
 			if($VCEisEventParameterType[%word])
 			{
