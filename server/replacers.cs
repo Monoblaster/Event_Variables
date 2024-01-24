@@ -165,7 +165,7 @@ function VCE_getReplacerHeaderEnd(%string,%headerStart){
 		return %headerEnd;
 	return -1;
 }
-function fxDTSBrick::doVCEReferenceString(%brick,%string)
+function fxDTSBrick::doVCEReferenceString(%brick,%string,%brick,%client,%player,%vehicle,%bot,%minigame)
 {	
 	%referenceCount = getFieldCount(%string);
 	for(%i = 0; %i < %referenceCount; %i++)
@@ -189,10 +189,15 @@ function fxDTSBrick::doVCEReferenceString(%brick,%string)
 				if(isFunction(%className,%function))
 				{
 					//is there any references in the parameters?
-					%parameters = %brick.doVCEReferenceString(getFields(%data,2, getFieldCount(%data) - 1));
+					%parameters = %brick.doVCEReferenceString(getFields(%data,2, getFieldCount(%data) - 1),%brick,%client,%player,%vehicle,%bot,%minigame);
 					//seperate paramters into a list
 					%c = 0;
 					while((%parameter[%c] = getField(%parameters, %c)) !$= ""){%c++;}
+					if(%function $= "getVariable")
+					{
+						%obj = VCE_getObjectFromVarType(%parameter1,%brick,%client,%player,%vehicle,%bot,%minigame);
+						%parameter1 = %obj;
+					}
 					//call function and get return
 					%product = %obj.VCE_call(%function,%parameter0,%parameter1,%parameter2,%parameter3,%parameter4,%parameter5,%parameter6,%parameter7,%parameter8,%parameter9,%parameter10,%parameter11,%parameter12,%parameter13,%parameter14);
 				}
@@ -205,7 +210,7 @@ function fxDTSBrick::doVCEReferenceString(%brick,%string)
 				if(isFunction(%function))
 				{
 					//is there any references in the parameters?
-					%parameters = %brick.doVCEReferenceString(getFields(%data,1, getFieldCount(%data)));
+					%parameters = %brick.doVCEReferenceString(getFields(%data,1, getFieldCount(%data)),%brick,%client,%player,%vehicle,%bot,%minigame);
 					//seperate paramters into a list
 					%c = 0;
 					while((%parameter[%c] = getField(%parameters, %c)) !$= ""){%c++;}
@@ -219,7 +224,7 @@ function fxDTSBrick::doVCEReferenceString(%brick,%string)
 		else if(strPos(%reference,"RL_") == 0)
 		{
 			//a reference to a literal string of some kind
-		    %string = setField(%string,%i,fxDTSBrick::doVCEReferenceString(%brick,%data));
+		    %string = setField(%string,%i,fxDTSBrick::doVCEReferenceString(%brick,%data,%brick,%client,%player,%vehicle,%bot,%minigame));
 		}
 	}
 	return %string;
@@ -379,13 +384,10 @@ function fxDTSBrick::filterVCEString(%brick,%string,%client,%player,%vehicle,%bo
 		}
 		else if(isObject(%brick) && isObject(%client))
 		{
-			if(isObject(%obj = VCE_getObjectFromVarType(%mode,%brick,%client,%player,%vehicle,%bot,%minigame)))
-			{
-				%product = %vargroup TAB "getVariable" TAB %var TAB %obj;
+			%product = %vargroup TAB "getVariable" TAB %var TAB %mode
 
-				$VCE[RF,%brick,$VCE[RFC,%brick]++] =  %product;
-				%product = "RF_" @ %brick @ "_" @ $VCE[RFC,%brick];
-			}
+			$VCE[RF,%brick,$VCE[RFC,%brick]++] =  %product;
+			%product = "RF_" @ %brick @ "_" @ $VCE[RFC,%brick];
 		}
 		%brick = %ogBrick;
 	} else

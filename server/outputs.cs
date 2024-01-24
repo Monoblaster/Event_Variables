@@ -314,7 +314,7 @@ function SimObject::VCECallEvent(%obj, %outputEvent, %brick, %client,%player,%ve
 		if((%referenceString = $VCE_ReferenceString[%brick,%eventLineNumber,%i]) $= "")
 			continue;
 
-		%par[%i] = strReplace(%brick.doVCEReferenceString(%referenceString),"\t","");
+		%par[%i] = strReplace(%brick.doVCEReferenceString(%referenceString,%brick,%client,%player,%vehicle,%bot,%minigame),"\t","");
 	}
 
 	%parCount = outputEvent_GetNumParametersFromIdx(%targetClass, %brick.eventOutputIdx[%eventLineNumber]);
