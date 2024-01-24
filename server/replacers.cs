@@ -384,7 +384,7 @@ function fxDTSBrick::filterVCEString(%brick,%string,%client,%player,%vehicle,%bo
 		}
 		else if(isObject(%brick) && isObject(%client))
 		{
-			%product = %vargroup TAB "getVariable" TAB %var TAB %mode
+			%product = %vargroup TAB "getVariable" TAB %var TAB %mode;
 
 			$VCE[RF,%brick,$VCE[RFC,%brick]++] =  %product;
 			%product = "RF_" @ %brick @ "_" @ $VCE[RFC,%brick];
