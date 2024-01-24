@@ -43,6 +43,14 @@ function VCE_initServer()
 	activatePackage(VCE_FireRelayNumFix);
 	deactivatePackage(VCE_Other);
 	activatePackage(VCE_Other);
+
+	//support to fix package ordering
+	if(isPackage(BotHolePackage))
+	{
+		deactivatePackage(BotHolePackage);
+		activatePackage(BotHolePackage);
+	}
+
 	//extends the targets of all listed items
 	extendTargetList();
 	//list of operators
