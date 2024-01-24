@@ -195,8 +195,7 @@ function fxDTSBrick::doVCEReferenceString(%brick,%string,%brick,%client,%player,
 					while((%parameter[%c] = getField(%parameters, %c)) !$= ""){%c++;}
 					if(%function $= "getVariable")
 					{
-						%obj = VCE_getObjectFromVarType(%parameter1,%brick,%client,%player,%vehicle,%bot,%minigame);
-						%parameter1 = %obj;
+						%parameter1 = VCE_getObjectFromVarType(%parameter1,%brick,%client,%player,%vehicle,%bot,%minigame);
 					}
 					//call function and get return
 					%product = %obj.VCE_call(%function,%parameter0,%parameter1,%parameter2,%parameter3,%parameter4,%parameter5,%parameter6,%parameter7,%parameter8,%parameter9,%parameter10,%parameter11,%parameter12,%parameter13,%parameter14);
