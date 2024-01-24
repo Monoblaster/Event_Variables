@@ -324,12 +324,14 @@ function SimObject::VCECallEvent(%obj, %outputEvent, %brick, %client,%player,%ve
 	//there's some special vce functions we want to call within this scope so they have access to needed references
 	if(%outPutEvent $= "VCE_modVariable")
 	{
-		//is this setting a named brick's variable?
-		%toNamedBrick = %obj != %brick || %obj.getName() !$= "";
+		
+		%toNamedBrick = false;
 
 		//adding context to parameters
 		if(%obj.getClassName() $= "fxDtsBrick")
 		{
+			//is this setting a named brick's variable?
+			%toNamedBrick = %obj != %brick && %obj.getName() !$= "";
 			%obj = VCE_getObjectFromVarType(%par1,%obj,%client,%player,%vehicle,%bot,%minigame);
 
 			%varName = %par2;
