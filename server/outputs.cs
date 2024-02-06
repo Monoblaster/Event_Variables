@@ -89,6 +89,8 @@ function mLTE(%v1, %v2)
 {
 	return %v1 <= %v2;
 }
+
+$vce_operation_lookupcount = 0; // i don't know why i didn't do this ealier oops
 $VCE::Server::Operation[$vce_operation_lookupcount++,OPERATOR] = "mAdd";
 	$VCE::Server::Operation[$vce_operation_lookupcount,VARIABLES] = 2;
 
@@ -430,7 +432,7 @@ function SimObject::VCECallEvent(%obj, %outputEvent, %brick, %client,%player,%ve
 		if(!isObject(%client))
 			return;
 
-		%test = doVCEVarFunction(%logic + 52,%vala,%valb);
+		%test = doVCEVarFunction(%logic + 55,%vala,%valb);
 
 		%subStart = getWord(%subData,0);
 		%subEnd = getWord(%subData,1);
