@@ -407,7 +407,6 @@ function fxDTSBrick::filterVCEString(%brick,%string,%client,%player,%vehicle,%bo
 		if(%prev $= "")
 		{
 			$VCE[RL,%brick,$VCE[RLC,%brick]++] = %header @ %fthings @ ">";
-			talk(trim("RL_" @ %brick @ "_" @ $VCE[RLC,%brick] TAB %fnext));
 			return trim("RL_" @ %brick @ "_" @ $VCE[RLC,%brick] TAB %fnext);
 		}
 
