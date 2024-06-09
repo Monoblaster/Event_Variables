@@ -90,7 +90,7 @@ function VariableGroup::getVariable(%group,%varName,%obj)
 		%className = "Bot";
 	if(strPos(%className,"Vehicle") >= 0 && %obj.class !$= "variablegroup")
 		%className = "Vehicle";
-		
+
 	if(isSpecialVar(%classname,%varName))
 	{
 		return eval("return" SPC strReplace($VCE::Server::SpecialVar[%classname,%varname],"%this",%obj) @ ";");

@@ -5,15 +5,6 @@
 //	@auther Monoblaster/46426
 //	@time 5:30 PM 16/04/2011
 //---
-$VCEisEventParameterType["int"] = 1;
-$VCEisEventParameterType["float"] = 1;
-$VCEisEventParameterType["list"] = 1;
-$VCEisEventParameterType["bool"] = 1;
-$VCEisEventParameterType["intList"] = 1;
-$VCEisEventParameterType["datablock"] = 1;
-$VCEisEventParameterType["string"] = 1;
-$VCEisEventParameterType["vector"] = 1;
-$VCEisEventParameterType["paintColor"] = 1;
 package VCE_Main
 {
 	//packages for figuring out special variable examples
@@ -94,36 +85,9 @@ package VCE_Main
 		%outputName = $OutputEvent_Name[%targetClass, %outputEventIdx];
 		%inputName = $InputEvent_Name[%targetClass, %inputEventIdx];
 		%i = mFloor (%brick.numEvents);
-		
-		
-		%parameterWords = verifyOutputParameterList(%targetClass, outputEvent_GetOutputEventIdx(%targetClass, %outputName));
-		%parameterWordCount = getWordCount(%parameterWords);
-		%c = 1;
-		//go thorugh parameters and filter replacers for them to make eval strings for later computaion
-		if(%i == 0)
-		{
-			//spaghetti code because i don't feel like making an initlizing function
-			$VCE[RFC,%brick] = 0;
-			$VCE[RLC,%brick] = 0;
-		}
 
-		//remove previous reference strings
-		deleteVariables("$VCE_ReferenceString"@%obj@"_"@%i@"_*");
+		%brick.VCE_Dirty = true;
 		
-		for(%j = 0; %j < %parameterWordCount; %j++)
-		{
-			%word = getWord(%parameterWords, %j);
-			if(%word $= "string"){
-				//filtering and creating a reference string
-				$VCE_ReferenceString[%brick,%i,%c] = trim(%brick.filterVCEString(strReplace(strReplace(%par[%c], "RF_", ""), "RL_", ""),%client,%client.player,%brick.vehicle,%brick.hbot,%client.minigame));
-			}
-			if($VCEisEventParameterType[%word])
-			{
-				%c++;
-			}	
-
-		}
-		%brick.VCE_Parsed = true;
 		//startfunction setup
 		if(%outputName $= "VCE_StartFunction"){
 			%brick.VCE_startFunction(%par1,%par2,%par3,%client);

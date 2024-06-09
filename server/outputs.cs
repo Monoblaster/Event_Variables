@@ -90,7 +90,7 @@ function mLTE(%v1, %v2)
 	return %v1 <= %v2;
 }
 
-function mSimular(%v1,%v2)
+function mSimilar(%v1,%v2)
 {
 	return strPos(%v1,getField(%v2, 0)) > -1;
 }
@@ -279,6 +279,15 @@ $VCE::Server::Operation[$vce_operation_lookupcount++,OPERATOR] = "mLTE";
 $VCE::Server::Operation[$vce_operation_lookupcount++,OPERATOR] = "mSimilar";
 	$VCE::Server::Operation[$vce_operation_lookupcount,VARIABLES] = 2;
 
+$VCEisEventParameterType["int"] = 1;
+$VCEisEventParameterType["float"] = 1;
+$VCEisEventParameterType["list"] = 1;
+$VCEisEventParameterType["bool"] = 1;
+$VCEisEventParameterType["intList"] = 1;
+$VCEisEventParameterType["datablock"] = 1;
+$VCEisEventParameterType["string"] = 1;
+$VCEisEventParameterType["vector"] = 1;
+$VCEisEventParameterType["paintColor"] = 1;
 //MIM between proccessing and actual event calling
 function SimObject::VCECallEvent(%obj, %outputEvent, %brick, %client,%player,%vehicle,%bot,%minigame, %passClient,%eventLineNumber, %par1, %par2, %par3, %par4)
 {
@@ -289,41 +298,53 @@ function SimObject::VCECallEvent(%obj, %outputEvent, %brick, %client,%player,%ve
 		%targetIDX = 0;
 	%targetClass = inputEvent_GetTargetClass("fxDTSBrick", %brick.eventInputIdx[%eventLineNumber], %targetIDX);
 
+	if(%brick.VCE_Dirty)
+	{
+		deleteVariables("$VCE"@%brick@"_*");
+		deleteVariables("$VCEPARSED_"@%brick@"_*");
+		$VCE[RFC,%brick] = 0;
+		$VCE[RLC,%brick] = 0;
+		%brick.VCE_Dirty = false;
+	}
+
 	//is this brick's event's parsed? we need to parse this now or replacers won't work
-	if(!%brick.VCE_Parsed)
+	if(!$VCE[PARSED,%brick,%eventLineNumber])
 	{
 		%parameterWords = verifyOutputParameterList(%targetClass, outputEvent_GetOutputEventIdx(%targetClass, %outputEvent));
 		%parameterWordCount = getWordCount(%parameterWords);
-		%c = 1;
 
-		for(%j = 0; %j < %parameterWordCount; %j++)
+		%c = 0;
+		for(%i = 0; %i < %parameterWordCount; %i++)
 		{
-			%word = getWord(%parameterWords, %j);
-			if(%word $= "string"){
-				//cleansing strings because you can crash by self referencing
-				%par[%c] = strReplace(%par[%c], "RF_", "");
-				%par[%c] = strReplace(%par[%c], "RL_", "");
-				//filtering and creating a reference string
-				$VCE_ReferenceString[%brick,%eventLineNumber,%c] = trim(%brick.filterVCEString(%par[%c],%client,%player,%vehicle,%bot,%minigame));
-				
-			}
-			if($VCEisEventParameterType[%word])
+			%word = getWord(%parameterWords, %i);
+			if(!$VCEisEventParameterType[%word])
 			{
-				%c++;
-			}	
+				continue;
+			}
 
+			%c++;
+
+			if(%word !$= "String")
+			{
+				continue;	
+			}
+
+			//filtering and creating a reference string
+			$VCE[%brick,%eventLineNumber,%c] =  %brick.filterVCEString(strReplace(strReplace(%par[%c], "RF_", ""), "RL_", ""),%client,%player,%vehicle,%bot,%minigame);
 		}
-		%brick.VCE_Parsed = true;
+		$VCE[PARSED,%brick,%eventLineNumber] = true;
 	}
 
 	//loop through replacing parameter string with the eval string equivilent
 	for(%i = 1; %i <= 4; %i++)
-	{
-		
-		if((%referenceString = $VCE_ReferenceString[%brick,%eventLineNumber,%i]) $= "")
+	{	
+		%reference = $VCE[%brick,%eventLineNumber,%i];
+		if(%reference $= "")
+		{
 			continue;
+		}
 
-		%par[%i] = strReplace(%brick.doVCEReferenceString(%referenceString,%brick,%client,%player,%vehicle,%bot,%minigame),"\t","");
+		%par[%i] = strReplace(%brick.doVCEReferenceString(%reference,%brick,%client,%player,%vehicle,%bot,%minigame),"\t","");
 	}
 
 	%parCount = outputEvent_GetNumParametersFromIdx(%targetClass, %brick.eventOutputIdx[%eventLineNumber]);
@@ -333,7 +354,6 @@ function SimObject::VCECallEvent(%obj, %outputEvent, %brick, %client,%player,%ve
 	//there's some special vce functions we want to call within this scope so they have access to needed references
 	if(%outPutEvent $= "VCE_modVariable")
 	{
-		
 		%toNamedBrick = false;
 
 		//adding context to parameters
@@ -341,37 +361,27 @@ function SimObject::VCECallEvent(%obj, %outputEvent, %brick, %client,%player,%ve
 		{
 			//is this setting a named brick's variable?
 			%toNamedBrick = %obj != %brick && %obj.getName() !$= "";
-			%obj = VCE_getObjectFromVarType(%par1,%obj,%client,%player,%vehicle,%bot,%minigame);
+			%modtarget = VCE_getObjectFromVarType(%par1,%obj,%client,%player,%vehicle,%bot,%minigame);
 
 			%varName = %par2;
 			%logic = %par3;
 			%value = %par4;
-
 		}
 		else
 		{
 			%varName = %par1;
 			%logic = %par2;
 			%value = %par3;
-
-			
-		}	
-		
-		%oldvalue = %vargroup.getVariable(%varName,%obj);
-
-		%newvalue = %value;
-		%v0 = %oldValue;
-		%v1 = getField(%newValue,0);
-		%v2 = getField(%newValue,0);
-		%v3 = getField(%newValue,0);
-		%v4 = getField(%newValue,0);
+		}
 
 		if(%logic != 0)
-			%newValue = doVCEVarFunction(%logic, %v0, %v1,%v2,%v3,%v4);
+			%value = doVCEVarFunction(%logic,%vargroup.getVariable(%varName,%modtarget)@","@%value);
 
-		%vargroup.setVariable(%varName,%newValue,%obj);
+		%vargroup.setVariable(%varName,%value,%modtarget);
 		if(%toNamedBrick)
-			%varGroup.setNamedBrickVariable(%varName,%newValue,%obj.getName());
+		{
+			%varGroup.setNamedBrickVariable(%varName,%value,%obj.getName());
+		}
 
 		%obj.processInputEvent("onVariableUpdate", %client);
 	}
@@ -439,7 +449,7 @@ function SimObject::VCECallEvent(%obj, %outputEvent, %brick, %client,%player,%ve
 		if(!isObject(%client))
 			return;
 
-		%test = doVCEVarFunction(%logic + 55,%vala,%valb);
+		%test = doVCEVarFunction(%logic + 55,%vala @ "," @ %valb);
 
 		%subStart = getWord(%subData,0);
 		%subEnd = getWord(%subData,1);
@@ -484,10 +494,28 @@ function SimObject::VCECallEvent(%obj, %outputEvent, %brick, %client,%player,%ve
 	}
 }
 
-function doVCEVarFunction(%opNum,%v0,%v1,%v2,%v3,%v4)
+function doVCEVarFunction(%func,%args)
 {
-	%operationName = $VCE::Server::Operation[%opNum,OPERATOR];
-	%operationCount = $VCE::Server::Operation[%opNum,VARIABLES];
+	%args = strReplace(%args,",","\t");
+	%count = getFieldCount(%args);
+	for(%i = 0; %i < %count; %i++)
+	{
+		%v[%i] = getField(%args,%i);
+	}
+
+	if(%func == 0)
+	{
+		%func = $VCE::Server::Function[%func];
+
+		if(%func $= "")
+		{
+			return "";
+		}
+	}
+	
+
+	%operationName = $VCE::Server::Operation[%func,OPERATOR];
+	%operationCount = $VCE::Server::Operation[%func,VARIABLES];
 	
 	if(%operationCount == 1)
 		return call(%operationName,%v0);
