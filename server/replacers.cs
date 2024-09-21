@@ -378,7 +378,7 @@ function fxDTSBrick::filterVCEString(%brick,%string,%client,%player,%vehicle,%bo
 		{
 			%product = %product TAB %output[%i];
 		}
-		return ltrim(%product);
+		return ltrim(%prev TAB %product TAB %fnext);
 	} else
 	//variable
 	if("<var:" $= %header)
