@@ -10,6 +10,8 @@
 function VCE_getObjectFromVarType(%id,%brick,%client,%player,%vehicle,%bot,%minigame)
 {
 	//Variable replacer ID
+	if(%id $= "Global" || %id $= "Gl")
+		return "Global";
 	if(%id $= "Brick" || %id $= "Br")
 		return %brick;
 	if(%id $= "Player" || %id $= "Pl")
