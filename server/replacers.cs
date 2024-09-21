@@ -479,12 +479,14 @@ function fxDTSBrick::filterVCEString(%brick,%string,%client,%player,%vehicle,%bo
 
 	if(%prev $= "")
 	{
-		$VCE[RL,%brick,$VCE[RLC,%brick]++] = %header @ %fthings @ ">";
-		return trim("RL_" @ %brick @ "_" @ $VCE[RLC,%brick] TAB %fnext);
+		$VCE[RL,%brick,$VCE[RLC,%brick]++] = %header;
+		$VCE[RL,%brick,$VCE[RLC,%brick]++] = ">";
+		return trim("RL_" @ %brick @ "_" @ ($VCE[RLC,%brick] - 1) TAB %fthings TAB "RL_" @ %brick @ "_" @ ($VCE[RLC,%brick]) TAB %fnext);
 	}
 
-	$VCE[%prev] = $VCE[%prev] @ %header @ %fthings @ ">";
-	return trim(%prev TAB %fnext);
+	$VCE[RL,%brick,$VCE[RLC,%brick]++] = %header;
+	$VCE[RL,%brick,$VCE[RLC,%brick]++] = ">";
+	return trim(%prev TAB "RL_" @ %brick @ "_" @ ($VCE[RLC,%brick] - 1) TAB %fthings TAB "RL_" @ %brick @ "_" @ ($VCE[RLC,%brick]) TAB %fnext);
 }
 
 //for compatibility; this is depricated and does nothing
