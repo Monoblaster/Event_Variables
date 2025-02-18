@@ -22,11 +22,14 @@ package VCE_Main
 
 		Parent::onAdd(%this, %obj);
 	}
-	function fxDtsBrick::spawnVehicle(%brick)
+	function fxDtsBrick::spawnVehicle(%brick,%delay)
 	{
-		Parent::spawnVehicle(%brick);
+		Parent::spawnVehicle(%brick,%delay);
 
-		$VCE::Server::SpecialVariableObject[%brick.getGroup().client,VEHICLE] = %brick.vehicle;
+		if(%delay == 0)
+		{
+			$VCE::Server::SpecialVariableObject[%brick.getGroup().client,VEHICLE] = %brick.vehicle;
+		}
 	}
 	function MinigameSO::AddMember(%mg,%client)
 	{
