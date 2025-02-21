@@ -643,7 +643,7 @@ function callVCEEventFunction (%eventFunctionName, %arg, %client)
 	for(%i = 0; %i < %groupSize; %i++)
 	{
 		%vargroup = getVariableGroupFromObject(%group.getObject(%i));
-		if(!isObject(%vargroup) || ($Pref::VCE::EventFunctionsAdminOnly && !%vargroup.client.isAdmin))
+		if(!isObject(%vargroup) || ($Pref::VCE::EventFunctionsAdminOnly && !%vargroup.brickgroup.client.isAdmin))
 			continue;
 
 		%localCount = %vargroup.vceLocalFunctionCount[%eventFunctionName];
@@ -670,7 +670,7 @@ function callVCEEventFunction (%eventFunctionName, %arg, %client)
 			%varGroup.setVariable("argcount",%fc,%localBrick);
 
 			if(!isobject(%client))
-				%client = %vargroup.client;
+				%client = %vargroup.brickgroup.client;
 			
 			%localbrick.VCE_ProcessVCERange(%subStart, %subEnd, "onVariableFunction", %client);
 		}

@@ -27,12 +27,15 @@ function VCE_createVariableGroup(%brickgroup)
 	{
 		class = "VariableGroup";
 	};
-	%brickgroup.vargroup.bl_id = %brickgroup.bl_id;
-	%brickgroup.vargroup.name = %brickgroup.name;
-	%brickgroup.vargroup.client = %brickgroup.client;
+	%brickgroup.vargroup.brickgroup = %brickgroup;
 }
 function VariableGroup::setVariable(%group,%varName,%value,%obj)
 {
+	if(!isObject(%obj))
+	{
+		return;
+	}
+
 	%className = %obj.getClassName();
 
 	if(%className $= "ScriptObject" && %obj.class !$= "variablegroup")
@@ -40,7 +43,7 @@ function VariableGroup::setVariable(%group,%varName,%value,%obj)
 	
 	if(isSpecialVar(%classname,%varName))
 	{
-		if($Pref::VCE::canEditSpecialVars || %group.client.isAdmin)
+		if($Pref::VCE::canEditSpecialVars || %group.brickgroup.client.isAdmin)
 		{
 			%f = "VCE_" @ $VCE::Server::ObjectToReplacer[%className] @ "_" @ $VCE::Server::SpecialVarEdit[%className,%varName];
 			if(isFunction(%f))
@@ -55,6 +58,11 @@ function VariableGroup::setVariable(%group,%varName,%value,%obj)
 }
 function VariableGroup::getVariable(%group,%varName,%obj)
 {
+	if(!isObject(%obj))
+	{
+		return;
+	}
+
 	if(%obj $= "GLOBAL")
 	{
 		return eval("return" SPC strReplace($VCE::Server::SpecialVar["GLOBAL",%varname],"%this",%obj) @ ";");
@@ -86,11 +94,11 @@ function VariableGroup::getVariable(%group,%varName,%obj)
 }
 function VariableGroup::setNamedBrickVariable(%group,%varName,%value,%brickName)
 {
-	%brickGroup = %group.client.brickgroup;
+	%brickGroup = %group.brickgroup;
 	%count = %brickGroup.ntObjectCount[%brickName];
 	if(isSpecialVar("fxDtsBrick",%varName))
 	{
-		if($Pref::VCE::canEditSpecialVars || %group.client.isAdmin)
+		if($Pref::VCE::canEditSpecialVars || %brickgroup.client.isAdmin)
 		{
 			%f = "VCE_Brick_" @ $VCE::Server::SpecialVarEdit["fxDtsBrick",%varName];
 			if(isFunction(%f))
@@ -116,7 +124,7 @@ function VariableGroup::setNamedBrickVariable(%group,%varName,%value,%brickName)
 }
 function VariableGroup::getNamedBrickVariable(%group,%varName,%brickName)
 {
-	%obj = %group.client.brickgroup.NTObject[%brickName,0];
+	%obj = %group.brickgroup.NTObject[%brickName,0];
 
 	if(!isObject(%obj))
 	{
@@ -158,9 +166,9 @@ function VariableGroup::saveVariable(%group,%varName,%obj)
 	}
 	%line = VCE_getSaveLine(%group.bl_id,%id,%className,%varName);
 	if(%line <= 0)
-		$VCE::Server::SaveLine[$VCE::Server::SaveLineCount++] = %group.BL_ID TAB %id TAB %className TAB %varName TAB %value;
+		$VCE::Server::SaveLine[$VCE::Server::SaveLineCount++] = %group.brickgroup.BL_ID TAB %id TAB %className TAB %varName TAB %value;
 	else
-		$VCE::Server::SaveLine[%line] = %group.BL_ID TAB %id TAB %className TAB %varName TAB %value;
+		$VCE::Server::SaveLine[%line] = %group.brickgroup.BL_ID TAB %id TAB %className TAB %varName TAB %value;
 	if(isEventPending($VCE::Server::SaveSchedule))
 		cancel($VCE::Server::SaveSchedule);
 	$VCE::Server::SaveSchedule = %group.schedule(300,"saveAllVariables",$VCE::Server::SavePath);
@@ -197,7 +205,7 @@ function VariableGroup::loadVariable(%group,%varName,%obj)
 		return;
 	}
 
-	%line = VCE_getSaveLine(%group.BL_ID,%id,%className,%varName);
+	%line = VCE_getSaveLine(%group.brickgroup.BL_ID,%id,%className,%varName);
 	if(%line == 0)
 		return;
 	%group.setVariable(%varName,getField($VCE::Server::SaveLine[%line],4),%obj);
