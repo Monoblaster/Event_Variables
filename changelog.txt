@@ -3,6 +3,11 @@ Stable: Was tested to be safe and usually approved by RTB file moderators.
 Public Beta: Was either hosted on a public server for people to try out or released by post (not uploaded to the add-ons section as official) to find bugs.
 Private Beta: Was Public amongst our beta testers.
 Skipped: This version was skipped from stable release for certain reasons.
+Version 7.53 (Stable):
+   <li> Fixed var groups being tied to client objects
+   <li> Fixed delays not working in range events
+   <li> Fixed compatibilty with addons that package processInputEvent
+   <li> Fixed ceil having the wrong number of arguements
 Version 7.52 (Stable):
    <li> Fixed precedence being backwards in the evaluation replacer
 Version 7.51 (Public Beta):

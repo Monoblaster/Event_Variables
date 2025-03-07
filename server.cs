@@ -5,9 +5,9 @@
 //------
 //Major: 7
 //Minor: 5
-//Patch: 2
-//Total: 7.52
-$VCE::Server::Version = "7.52";
+//Patch: 3
+//Total: 7.53
+$VCE::Server::Version = "7.53";
 //---
 // Support
 //---
