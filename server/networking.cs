@@ -14,7 +14,7 @@ function serverCmdVCE_onLink(%client,%brick,%index)
 		%client.varLink[%brick] = "";
 		$inputTarget_Self = %brick;
 		$inputTarget_Player = %client.player;
-		$inputTarget_Bot = %brick.vehicle;
+		$inputTarget_Bot = %brick.hBot;
 		$inputTarget_Client = %client;
 		$inputTarget_Minigame = getMinigameFromObject(%client);
 		%brick.processInputEvent("onVariableUpdate",%client);

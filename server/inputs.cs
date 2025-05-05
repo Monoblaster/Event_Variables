@@ -63,7 +63,7 @@ function fxDtsBrick::onVariableUpdate(%brick,%client)
 {
 	$inputTarget_Self = %brick;
 	$inputTarget_Player = %client.player;
-	$inputTarget_Bot = %brick.vehicle;
+	$inputTarget_Bot = %brick.hBot;
 	$inputTarget_Client = %client;
 	$inputTarget_Vehicle = %brick.vehicle;
 	$inputTarget_Minigame = getMinigameFromObject(%client);
@@ -72,7 +72,7 @@ function fxDtsBrick::onVariableTrue(%brick,%client,%start,%end)
 {
 	$inputTarget_Self = %brick;
 	$inputTarget_Player = %client.player;
-	$inputTarget_Bot = %brick.vehicle;
+	$inputTarget_Bot = %brick.hBot;
 	$inputTarget_Client = %client;
 	$inputTarget_Vehicle = %brick.vehicle;
 	$inputTarget_Minigame = getMinigameFromObject(%client);
@@ -81,7 +81,7 @@ function fxDtsBrick::onVariableFalse(%brick,%client, %start, %end)
 {
 	$inputTarget_Self = %brick;
 	$inputTarget_Player = %client.player;
-	$inputTarget_Bot = %brick.vehicle;
+	$inputTarget_Bot = %brick.hBot;
 	$inputTarget_Client = %client;
 	$inputTarget_Vehicle = %brick.vehicle;
 	$inputTarget_Minigame = getMinigameFromObject(%client);
@@ -90,7 +90,7 @@ function fxDtsBrick::onVariableFunction(%brick,%client, %start, %end)
 {
 	$inputTarget_Self = %brick;
 	$inputTarget_Player = %client.player;
-	$inputTarget_Bot = %brick.vehicle;
+	$inputTarget_Bot = %brick.hBot;
 	$inputTarget_Client = %client;
 	$inputTarget_Vehicle = %brick.vehicle;
 	$inputTarget_Minigame = getMinigameFromObject(%client);
