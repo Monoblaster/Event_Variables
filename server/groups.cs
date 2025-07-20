@@ -58,14 +58,14 @@ function VariableGroup::setVariable(%group,%varName,%value,%obj)
 }
 function VariableGroup::getVariable(%group,%varName,%obj)
 {
+	if(%obj $= "GLOBAL" && isSpecialVar("GLOBAL",%varName))
+	{
+		return eval("return" SPC $VCE::Server::SpecialVar["GLOBAL",%varname] @ ";");
+	}
+
 	if(!isObject(%obj))
 	{
 		return;
-	}
-
-	if(%obj $= "GLOBAL")
-	{
-		return eval("return" SPC strReplace($VCE::Server::SpecialVar["GLOBAL",%varname],"%this",%obj) @ ";");
 	}
 
 	%className = %obj.getClassName();
