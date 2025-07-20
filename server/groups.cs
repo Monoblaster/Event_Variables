@@ -65,7 +65,7 @@ function VariableGroup::getVariable(%group,%varName,%obj)
 
 	if(!isObject(%obj))
 	{
-		return;
+		return "";
 	}
 
 	%className = %obj.getClassName();
