@@ -547,7 +547,7 @@ function fxDTSBrick::VCE_callFunction(%obj,%name,%args,%delay,%client)
 {
 	%varGroup = getVariableGroupFromObject(%obj);
 
-	if(%delay < 0)
+	if(%delay < 33)
 		%delay = 0;
 	%args = strReplace(%args,"|","\t");
 	%args = strReplace(%args,",","\t");
@@ -565,7 +565,15 @@ function fxDTSBrick::VCE_callFunction(%obj,%name,%args,%delay,%client)
 
 		%varGroup.setVariable("argcount",getFieldCount(%args),%obj);
 
-		%obj.VCE_ProcessVCERange(%subStart, %subEnd, "onVariableFunction",%client);
+		if(%delay == 0)
+		{
+			%obj.VCE_ProcessVCERange(%subStart, %subEnd, "onVariableFunction",%client);
+		}
+		else
+		{
+			%obj.schedule(%delay,"VCE_ProcessVCERange",%subStart, %subEnd, "onVariableFunction",%client);
+		}
+		
 	} 
 	else if((%count = %vargroup.vceLocalFunctionCount[%name]) > 0)
 	{
@@ -588,7 +596,14 @@ function fxDTSBrick::VCE_callFunction(%obj,%name,%args,%delay,%client)
 
 			%varGroup.setVariable("argcount",getFieldCount(%args),%localBrick);
 
-			%localbrick.VCE_ProcessVCERange(%subStart, %subEnd, "onVariableFunction",%client);
+			if(%delay == 0)
+			{
+				%obj.VCE_ProcessVCERange(%subStart, %subEnd, "onVariableFunction",%client);
+			}
+			else
+			{
+				%obj.schedule(%delay,"VCE_ProcessVCERange",%subStart, %subEnd, "onVariableFunction",%client);
+			}
 		}
 	}
 }

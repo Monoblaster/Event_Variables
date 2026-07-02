@@ -217,7 +217,20 @@ $VCE::Server::IsNumericLiteral[7] = true;
 $VCE::Server::IsNumericLiteral[8] = true;
 $VCE::Server::IsNumericLiteral[9] = true;
 $VCE::Server::IsNumericLiteral["."] = true;
-$VCE::Server::IsNumericLiteral["-"] = true;
+$VCE::Server::IsNumericLiteralPrefix["-"] = true;
+$VCE::Server::IsNumericLiteralPostFix["e"] = true;
+$VCE::Server::IsExponentialLiteralPrefix["+"] = true;
+$VCE::Server::IsExponentialLiteralPrefix["-"] = true;
+$VCE::Server::IsExponentialLiteral[0] = true;
+$VCE::Server::IsExponentialLiteral[1] = true;
+$VCE::Server::IsExponentialLiteral[2] = true;
+$VCE::Server::IsExponentialLiteral[3] = true;
+$VCE::Server::IsExponentialLiteral[4] = true;
+$VCE::Server::IsExponentialLiteral[5] = true;
+$VCE::Server::IsExponentialLiteral[6] = true;
+$VCE::Server::IsExponentialLiteral[7] = true;
+$VCE::Server::IsExponentialLiteral[8] = true;
+$VCE::Server::IsExponentialLiteral[9] = true;
 
 $VCE::Server::IsWhiteSpace[" "] = true;
 
@@ -240,6 +253,14 @@ $VCE::Server::IsOperatorSymbol["l"] = true;
 $VCE::Server::IsOperatorSymbol["t"] = true;
 $VCE::Server::IsOperatorSymbol["s="] = true;
 
+//assumptions:
+//a number is always:w followed by an operator and an operator is always followed by a number
+//only the last number will ever not be followed by a operator
+//open paranthesis can go at the beginning or after an operator
+//closed paranthesis can go after a number
+
+//this function is written very plainly out in the flow that all things should be ordered
+//because i'm using base level language functionaly instead of a state machine this should be faster but less maintainable
 function VCE_ReplacerDoEvaluate(%parameter,%eventbrick,%target,%client,%player,%vehicle,%bot,%minigame)
 {
 	%count = strlen(%parameter);
@@ -264,11 +285,25 @@ function VCE_ReplacerDoEvaluate(%parameter,%eventbrick,%target,%client,%player,%
 
 		if(%char $= "(")
 		{
-			%operatorStack[%curroperator++] = "(";
-			%char = getSubStr(%parameter,%i++,1);
-		}
+			while(%char $= "(")
+			{
+				%operatorStack[%curroperator++] = "(";
+				%char = getSubStr(%parameter,%i++,1);
 
-		if($VCE::Server::IsWhiteSpace[%char])
+				if($VCE::Server::IsWhiteSpace[%char])
+				{
+					for(%i = %i; %i < %count; %i++)
+					{
+						%char = getSubStr(%parameter,%i,1);
+						if(!$VCE::Server::IsWhiteSpace[%char])
+						{
+							break;
+						}
+					}
+				}
+			}
+		}
+		else if($VCE::Server::IsWhiteSpace[%char])
 		{
 			for(%i = %i; %i < %count; %i++)
 			{
@@ -280,7 +315,7 @@ function VCE_ReplacerDoEvaluate(%parameter,%eventbrick,%target,%client,%player,%
 			}
 		}
 
-		if($VCE::Server::IsNumericLiteral[%char])
+		if($VCE::Server::IsNumericLiteral[%char] || $VCE::Server::IsNumericLiteralPrefix[%char])
 		{
 			%token = %char;
 			%i++;
@@ -292,6 +327,27 @@ function VCE_ReplacerDoEvaluate(%parameter,%eventbrick,%target,%client,%player,%
 					break;
 				}
 				%token = %token @ %char;
+			}
+
+			if($VCE::Server::IsNumericLiteralPostFix[%char])
+			{
+				%token = %token @ %char;
+				%i++;
+				%char = getSubStr(%parameter,%i,1);
+				if($VCE::Server::IsExponentialLiteralPrefix[%char])
+				{
+					%token = %token @ %char;
+					%i++;
+					for(%i = %i; %i < %count; %i++)
+					{
+						%char = getSubStr(%parameter,%i,1);
+						if(!$VCE::Server::IsExponentialLiteral[%char])
+						{
+							break;
+						}
+						%token = %token @ %char;
+					}
+				}
 			}
 			%tokenstack[%currToken++] = %token;
 		}
@@ -314,19 +370,33 @@ function VCE_ReplacerDoEvaluate(%parameter,%eventbrick,%target,%client,%player,%
 
 		if(%char $= ")")
 		{
-			for(%j = %curroperator; %j > -1; %j--)
+			while(%char $= ")")
 			{
-				if(%operatorStack[%j] $= "(")
+				for(%j = %curroperator; %j > -1; %j--)
 				{
-					break;
+					if(%operatorStack[%j] $= "(")
+					{
+						break;
+					}
+					%tokenstack[%currToken++] = %operatorStack[%j];
 				}
-				%tokenstack[%currToken++] = %operatorStack[%j];
-			}
-			%curroperator = %j - 1;
-			%char = getSubStr(%parameter,%i++,1);
-		}
+				%curroperator = %j - 1;
+				%char = getSubStr(%parameter,%i++,1);
 
-		if($VCE::Server::IsWhiteSpace[%char])
+				if($VCE::Server::IsWhiteSpace[%char])
+				{
+					for(%i = %i; %i < %count; %i++)
+					{
+						%char = getSubStr(%parameter,%i,1);
+						if(!$VCE::Server::IsWhiteSpace[%char])
+						{
+							break;
+						}
+					}
+				}
+			}
+		}
+		else if($VCE::Server::IsWhiteSpace[%char])
 		{
 			for(%i = %i; %i < %count; %i++)
 			{
@@ -363,11 +433,25 @@ function VCE_ReplacerDoEvaluate(%parameter,%eventbrick,%target,%client,%player,%
 
 			if(%curroperator != -1 && $VCE::Server::OperatorPrecedence[%operatorStack[%curroperator]] >= $VCE::Server::OperatorPrecedence[%token])
 			{
+				%paranthesis = false;
 				for(%j = %curroperator; %j > -1; %j--)
 				{
+					if(%operatorStack[%j] $= "(")
+					{
+						%paranthesis = true;
+						break;
+					}
 					%tokenstack[%currToken++] = %operatorStack[%j];
 				}
-				%curroperator = -1;
+
+				if(%paranthesis)
+				{
+					%currOperator = %j;
+				}
+				else
+				{
+					%curroperator = -1;
+				}
 			}
 			
 			%operatorStack[%curroperator++] = %token;
@@ -376,12 +460,26 @@ function VCE_ReplacerDoEvaluate(%parameter,%eventbrick,%target,%client,%player,%
 		{
 			return %parameter SPC "\c0INVALID CHARACTER \"" @ %char @ "\" @" SPC %i; //invalid character error
 		}
+
+		// %dump = "";
+		// for(%j = 0; %j <= %currOperator; %j++)
+		// {
+		// 	%dump = %dump SPC %operatorStack[%j];
+		// }
+		// echo("OP dump:" SPC trim(%dump));
 	}
 
 	for(%j = %curroperator; %j > -1; %j--)
 	{
 		%tokenstack[%currToken++] = %operatorStack[%j];
 	}
+
+	// %dump = "";
+	// for(%i = 0; %i <= %currToken; %i++)
+	// {
+	// 	%dump = %dump SPC %TokenStack[%i];
+	// }
+	// echo("TOKEN dump:" SPC trim(%dump));
 
 	%currsoltuion = -1;
 	for(%i = 0; %i < %currToken + 1; %i++)
@@ -513,13 +611,32 @@ function VCE_CompiledParameter_Create(%brick,%eventidx,%paridx)
 				%brick.VCE_tokenStack[%eventidx,%paridx,%currtoken] = %brick.VCE_tokenStack[%eventidx,%paridx,%currtoken] @ ">";
 				%inmarkdown = false;
 			}
-			else
+			else if(%currdepth > 0)
 			{
 				%donotmergenextliteral = true;
 				for(%i = 0; %i < %closechange; %i++)
 				{
 					%brick.VCE_tokenStack[%eventidx,%paridx,%currToken++] = %operatorStack[%curroperator-- + 1];
 					%brick.VCE_tokentype[%eventidx,%paridx,%currtoken] = $VCE::Server::ParserTypeFunction;
+				}
+			}
+			else
+			{
+				%s = "";
+				for(%i = 0; %i < %closechange; %i++)
+				{
+					%s = %s @ ">";
+				}
+				
+				if(%brick.VCE_tokentype[%eventidx,%paridx,%currtoken] != $VCE::Server::ParserTypeLiteral || %donotmergenextliteral)
+				{
+					%brick.VCE_tokenStack[%eventidx,%paridx,%currToken++] = %s;
+					%brick.VCE_tokentype[%eventidx,%paridx,%currtoken] = $VCE::Server::ParserTypeLiteral;
+					%donotmergenextliteral = false;
+				}
+				else
+				{
+					%brick.VCE_tokenStack[%eventidx,%paridx,%currtoken] = %brick.VCE_tokenStack[%eventidx,%paridx,%currtoken] @ %s;
 				}
 			}
 		}
@@ -582,7 +699,7 @@ function fxDTSBrick::VCE_CompileBrick(%brick)
 		}
 		else
 		{
-			%targetClass = inputEvent_GetTargetClass("fxDTSBrick", %brick.eventInputIdx[%i], %targetIDX);
+			%targetClass = inputEvent_GetTargetClass("fxDTSBrick", %brick.eventInputIdx[%i], %targetVCE_CompiledParameter_RunIDX);
 		}
 
 		%parameterWords = verifyOutputParameterList(%targetClass, %brick.eventOutputIdx[%i]);
